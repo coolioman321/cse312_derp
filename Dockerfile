@@ -1,16 +1,15 @@
-FROM python:3.8
+FROM node:18-alpine
 
-ENV HOME /root
-WORKDIR /root
+WORKDIR /app
+
+COPY package.json .
+
+RUN npm install
 
 COPY . .
 
-# Download dependencies
-RUN pip3 install -r requirements.txt
+RUN npm run build
 
 EXPOSE 8080
 
-ADD https://github.com/ufoscout/docker-compose-wait/releases/download/2.2.1/wait /wait
-RUN chmod +x /wait
-
-CMD /wait && python3 -u app.py
+CMD [ "npm", "run", "preview" ]
