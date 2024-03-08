@@ -1,12 +1,17 @@
-version: '3.3'
+version: '3.9'
+
 services:
+
   mongo:
     image: mongo:4.2.5
     ports:
       - '27017:27017'
-  app:
+
+  server:
     build: .
+    ports: 
+      - "8080:8080"
+    volumes:
+      - .:/root
     environment:
-      WAIT_HOSTS: mongo:27017
-    ports:
-      - '8080:8080'
+      FLASK_ENV: development

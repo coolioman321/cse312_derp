@@ -1,7 +1,9 @@
 FROM python:3.8
 
-ENV HOME /root
-WORKDIR /root
+WORKDIR /user/src/server
+
+ENV FLASK_APP=app.py
+ENV FLASK_ENV=development
 
 COPY . .
 
