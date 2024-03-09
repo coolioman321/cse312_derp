@@ -1,4 +1,5 @@
-from flask import Flask
+from flask import Flask,make_response,render_template
+
 def create_app():
 
     app = Flask(__name__)
@@ -6,12 +7,30 @@ def create_app():
 
     @app.route('/')
     def home_page():
-        headers ={
-            "X-Content-Type-Options": "nosniff",
-            "Content-Length": "5"
-        }
+        response = make_response(render_template('index.html'),200)
+        response.headers["X-Content-Type-Options"] ="nosniff"
+        response.headers["Content-Type"] = 'text/html'
       #sending example response from the root page
-        return Flask.response_class(b'hello',status= 200,headers=headers,mimetype= "text/plain")
+        return response
+
+    @app.route('/images/download.jpg')
+    def host_image():
+        headers ={
+        "X-Content-Type-Options": "nosniff"
+        }
+        with open('images/download.jpg', "rb") as file:
+            content = file.read()
+        return Flask.response_class(content,status= 200,headers=headers,mimetype= "image/jpeg")
+
+    @app.route('/app.js')
+    def host_js():
+        headers ={
+            "X-Content-Type-Options": "nosniff"
+        }
+        with open('app.js', "rb") as file:
+            content = file.read()
+        return Flask.response_class(content,status= 200,headers=headers,mimetype= "text/javascript")
+
     return app
 
 if __name__ == "__main__":
