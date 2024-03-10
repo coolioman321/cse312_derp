@@ -33,6 +33,11 @@ def create_app():
 
     return app
 
+    @app.route('/js')
+    def js_page():
+        return render_template('js.html')
+
+    return app
 if __name__ == "__main__":
     app = create_app()
     app.run(debug=True,host = "0.0.0.0", port = 8080)
