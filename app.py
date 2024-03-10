@@ -65,6 +65,16 @@ def create_app():
 
         return send_from_directory(favicon_path_dir, "favicon.ico")
     
+    @app.route ("/cat.jpg")
+    def serve_cat():
+        cat_path_dir = os.getcwd() + "/client/build"
+
+        @after_this_request
+        def set_header(response):
+            return add_security_headers(response)
+
+        return send_from_directory(cat_path_dir, "cat.jpg")
+    
     return app
 
 if __name__ == "__main__":
