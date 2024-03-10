@@ -12,7 +12,16 @@ def create_app():
         response.headers["Content-Type"] = 'text/html'
       #sending example response from the root page
         return response
-
+        
+    @app.route('/style.css')
+    def  host_css():
+        headers ={
+            "X-Content-Type-Options": "nosniff"
+        }
+        with open('style.css', "rb") as file:
+            content = file.read()
+        return Flask.response_class(content,status= 200,headers=headers,mimetype= "text/css")
+        
     @app.route('/images/download.jpg')
     def host_image():
         headers ={
