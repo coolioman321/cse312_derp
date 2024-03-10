@@ -3,7 +3,7 @@ import '../App.css'
 
 function Homepage() {
     const showAlert = () => {
-        alert('Button clicked!')
+        alert('You clicked the button!')
     }
 
     return (
