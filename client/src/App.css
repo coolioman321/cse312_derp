@@ -1,3 +1,17 @@
+.headerText {
+  font-size: 1em;
+  font-weight: bold;
+  color: red;
+  margin-bottom: 0;
+}
+
+.buttonStyle {
+  font-size: 1em;
+  font-weight: bold;
+  color: blue;
+  margin-top: 0;
+}
+
 .App {
   text-align: center;
 }
