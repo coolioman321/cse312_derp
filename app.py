@@ -22,6 +22,15 @@ def create_app():
             content = file.read()
         return Flask.response_class(content,status= 200,headers=headers,mimetype= "image/jpeg")
 
+    @app.route('/style.css')
+    def  host_css():
+        headers ={
+            "X-Content-Type-Options": "nosniff"
+        }
+        with open('style.css', "rb") as file:
+            content = file.read()
+        return Flask.response_class(content,status= 200,headers=headers,mimetype= "text/css")
+
     @app.route('/app.js')
     def host_js():
         headers ={
