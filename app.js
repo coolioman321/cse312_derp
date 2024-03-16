@@ -54,3 +54,4 @@ document.getElementById('confirmPassword').addEventListener('input', function() 
         confirmPasswordInput.setCustomValidity('');
     }
 });
+

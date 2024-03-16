@@ -1,6 +1,6 @@
 from flask import Flask, make_response, render_template, send_from_directory, request, redirect, url_for
 from pymongo import MongoClient
-from util.helper import validate_password, escape_html
+from util.helper import validate_password, escape_html,extract_credentials
 import bcrypt
 
 mongo_client = MongoClient('mongo')
@@ -65,6 +65,53 @@ def create_app():
         users.insert_one({"username": username, "password": encrypted_pw})
         
         # Redirect back to homepage
+        return redirect(url_for('home_page'))
+
+    @app.route('/login', methods=['POST'])
+    def login():
+
+        username = request.form["login_username"]
+        password = request.form["login_password"]
+        stored_record = users.find_one({"username":username})
+
+        if stored_record is not None:
+            stored_password = stored_record["password"]
+
+            if(bcrypt.checkpw(password.encode('utf-8'),stored_password)):
+            #if the passwords match
+
+
+                with open("templates/index.html", "rt") as file:
+                    content = file.read()
+                    content = content.replace('<form type = hidden>','<form ')
+                    content =  content.replace("Register:",'< form type = hidden >')
+                    content = content.replace("Login:",'<form type = hidden>')
+                    content = content.replace("{{username}}", username)
+
+                file = open("templates/index.html", "w")
+                file.write(content)
+                file.close()
+
+
+                ##### SET AUTHENTICATION #####
+        return redirect(url_for('home_page'))
+
+    @app.route('/log-out', methods=['POST'])
+    def logout(request):
+        with open("templates/index.html", "rt") as file:
+            content = file.read()
+
+
+            content= content.replace('< form type = hidden >',"Register:",)
+            content = content.replace('<form type = hidden>',"Login:",)
+            content = content.replace('form type = hidden', '<form >')
+            file.close()
+            file = open("templates/index.html", "w")
+            file.write(content)
+            file.close()
+
+            ####REMOVE AUTHENTICATION#####
+
         return redirect(url_for('home_page'))
 
     return app

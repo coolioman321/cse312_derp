@@ -26,3 +26,34 @@ def escape_html(text):
     text = text.replace("<", "&lt;")
     text = text.replace(">", "&gt;")
     return text
+
+
+import re
+def extract_credentials(request_obj):
+    print(request_obj)
+    string_converted = (request_obj.body.decode())
+    split_pairs_list = string_converted.split('&',1)
+    unparsed_password = ""
+    username = ""
+
+    username_pair = split_pairs_list[0]
+    username_pair_split = username_pair.split('=',1)
+    username = username_pair_split[1]
+
+    password_pair = split_pairs_list[1]
+    password_pair_split = password_pair.split('=',1)
+    unparsed_password = password_pair_split[1]
+    unparsed_password = unparsed_password.replace("%28%27%2C+%27%29","(', ')")
+    unparsed_password = unparsed_password.replace('+',' ')
+    unparsed_password = unparsed_password.replace('%21','!')
+    unparsed_password = unparsed_password.replace('%40','@')
+    unparsed_password = unparsed_password.replace('%23','#')
+    unparsed_password = unparsed_password.replace('%24','$')
+    unparsed_password = unparsed_password.replace('%5E','^')
+    unparsed_password = unparsed_password.replace('%26','&')
+    unparsed_password = unparsed_password.replace('%3D','=')
+    unparsed_password = unparsed_password.replace('%20',' ')
+    unparsed_password = unparsed_password.replace('%2B','+')
+    password = unparsed_password.replace('%25','%')
+
+    return [username,password]

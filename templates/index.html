@@ -5,10 +5,13 @@
 </head>
 <body>
     <h1>WELCOME</h1>
+    <h2 >{{username}}</h2>
     <div class="image_div">
         <img src="/images/download.jpg" alt="ME rn" class="my_image"/>
     </div>
     <!-- Registration Form -->
+
+    Register:
     <form id="registrationForm" action="/register" method="POST">
         <h2>Register</h2>
         <div>
@@ -25,6 +28,26 @@
         </div>
         <button type="submit">Register</button>
     </form>
+
+    <!-- Login Form -->
+    Login:
+    <form id="loginForm" action="/login" method="POST">
+        <h2>Login</h2>
+        <div>
+            <label for="username">Username:</label>
+            <input type="text" id="login_username" name="login_username" required>
+        </div>
+        <div>
+            <label for="password">Password:</label>
+            <input type="password" id="login_password" name="login_password" required minlength="8">
+        </div>
+        <button type="submit">Login</button>
+    </form>
+
+    <!--Logout Form -->
+        <form type = hidden action="/log-out" id = 'log_out' method="post">
+            <input type="submit" value="Log out">
+        </form>
 
     <script src="/app.js" defer></script>
 </body>
