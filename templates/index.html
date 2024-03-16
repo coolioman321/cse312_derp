@@ -9,7 +9,7 @@
         <img src="/images/download.jpg" alt="ME rn" class="my_image"/>
     </div>
     <!-- Registration Form -->
-    <form id="registrationForm">
+    <form id="registrationForm" action="/register" method="POST">
         <h2>Register</h2>
         <div>
             <label for="username">Username:</label>
@@ -17,7 +17,7 @@
         </div>
         <div>
             <label for="password">Password:</label>
-            <input type="password" id="password" name="password" required>
+            <input type="password" id="password" name="password" required minlength="8">
         </div>
         <div>
             <label for="confirmPassword">Confirm Password:</label>
