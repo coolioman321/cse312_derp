@@ -1,34 +1,31 @@
-
 <!DOCTYPE html>
 <html>
-<link rel="stylesheet" type="text/css" href="/style.css"/>
 <head>
     <title>Tester Page</title>
 </head>
 <body>
-Tester Page
+    <h1>WELCOME</h1>
+    <div class="image_div">
+        <img src="/images/download.jpg" alt="ME rn" class="my_image"/>
+    </div>
+    <!-- Registration Form -->
+    <form id="registrationForm">
+        <h2>Register</h2>
+        <div>
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" required>
+        </div>
+        <div>
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
+        </div>
+        <div>
+            <label for="confirmPassword">Confirm Password:</label>
+            <input type="password" id="confirmPassword" name="confirmPassword" required>
+        </div>
+        <button type="submit">Register</button>
+    </form>
+
+    <script src="/app.js" defer></script>
 </body>
-<h1>WELCOME</h1>
-<div class="image_div">
-    <img src="/images/download.jpg" alt="ME rn" class="my_image"/>
-</div>
-<div class="welcome-div">
-    <p id="paragraph">
-        Welcome to the app testing pageeeeeeee
-    </p>
-</div>
-</div>
-
-<body>
-<script src="/app.js" defer></script>
-
-<button id = "button" onclick=handle_button()>Don't Click Me!</button>
-
-<h2 id = "presentHeader">Hi :) </h2>
-</body>
-
-
-
-
-
 </html>
