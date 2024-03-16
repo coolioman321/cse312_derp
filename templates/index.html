@@ -4,6 +4,19 @@
     <title>Tester Page</title>
 </head>
 <body>
+<script>
+    window.onload = function() {
+    var userLoggedIn = {{ loggedin | tojson }};
+    var logoutButton = document.getElementById('log_out');
+
+    if (userLoggedIn) {
+        logoutButton.style.display = 'block';
+    } else {
+        logoutButton.style.display = 'none';
+    }
+};
+
+</script>
     <h1>WELCOME</h1>
     <h2 >{{username}}</h2>
     <div class="image_div">

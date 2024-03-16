@@ -1,8 +1,15 @@
-from flask import Flask, make_response, render_template, send_from_directory, request, redirect, url_for
+import datetime
+import hashlib
+import os
+from lib2to3.btm_utils import tokens
+
+from flask import Flask, make_response, render_template, send_from_directory, request, redirect, url_for, session
 from pymongo import MongoClient
 from util.helper import validate_password, escape_html,extract_credentials
 import bcrypt
 
+app = Flask(__name__)
+app.secret_key = 'your_secret_key'
 mongo_client = MongoClient('mongo')
 db = mongo_client['derp']
 users = db['users']
@@ -13,7 +20,9 @@ def create_app():
     # Serve the home page
     @app.route('/')
     def home_page():
-        response = make_response(render_template('index.html'), 200)
+        loggedin = 'user_logged_in' in session
+        content = render_template('index.html', loggedin=loggedin)
+        response = make_response(content, 200)
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["Content-Type"] = 'text/html'
         return response
@@ -80,6 +89,9 @@ def create_app():
             if(bcrypt.checkpw(password.encode('utf-8'),stored_password)):
             #if the passwords match
 
+                # login then set session
+                session['user_logged_in'] = True
+                session['username'] = username
 
                 with open("templates/index.html", "rt") as file:
                     content = file.read()
@@ -91,6 +103,7 @@ def create_app():
                 file = open("templates/index.html", "w")
                 file.write(content)
                 file.close()
+
 
 
                 ##### SET AUTHENTICATION #####
