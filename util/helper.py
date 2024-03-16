@@ -57,3 +57,4 @@ def extract_credentials(request_obj):
     password = unparsed_password.replace('%25','%')
 
     return [username,password]
+

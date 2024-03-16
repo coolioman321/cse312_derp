@@ -1,54 +1,61 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Tester Page</title>
 </head>
+
+<link rel="stylesheet" type="text/css" href="/style.css"/>
+
 <body>
     <h1>WELCOME</h1>
-    <h2 >{{username}}</h2>
+    <h2>guest</h2>
     <div class="image_div">
-        <img src="/images/download.jpg" alt="ME rn" class="my_image"/>
+        <img src="/images/download.jpg" alt="ME rn" class="my_image" />
     </div>
-    <!-- Registration Form -->
 
-    Register:
-    <form id="registrationForm" action="/register" method="POST">
-        <h2>Register</h2>
-        <div>
-            <label for="username">Username:</label>
-            <input type="text" id="username" name="username" required>
-        </div>
-        <div>
-            <label for="password">Password:</label>
-            <input type="password" id="password" name="password" required minlength="8">
-        </div>
-        <div>
-            <label for="confirmPassword">Confirm Password:</label>
-            <input type="password" id="confirmPassword" name="confirmPassword" required>
-        </div>
-        <button type="submit">Register</button>
-    </form>
+    {% if not user_logged_in %}
+        <!-- Register: -->
+        <form id="registrationForm" action="/register" method="POST">
+            <h2>Register</h2>
+            <div>
+                <label for="username">Username:</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+            <div>
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required minlength="8">
+            </div>
+            <div>
+                <label for="confirmPassword">Confirm Password:</label>
+                <input type="password" id="confirmPassword" name="confirmPassword" required>
+            </div>
+            <button type="submit">Register</button>
+        </form>
 
-    <!-- Login Form -->
-    Login:
-    <form id="loginForm" action="/login" method="POST">
-        <h2>Login</h2>
-        <div>
-            <label for="username">Username:</label>
-            <input type="text" id="login_username" name="login_username" required>
-        </div>
-        <div>
-            <label for="password">Password:</label>
-            <input type="password" id="login_password" name="login_password" required minlength="8">
-        </div>
-        <button type="submit">Login</button>
-    </form>
-
-    <!--Logout Form -->
-        <form type = hidden action="/log-out" id = 'log_out' method="post">
+        <!-- Login Form -->
+        <!-- Login: -->
+        <form id="loginForm" action="/login" method="POST">
+            <h2>Login</h2>
+            <div>
+                <label for="username">Username:</label>
+                <input type="text" id="login_username" name="login_username" required>
+            </div>
+            <div>
+                <label for="password">Password:</label>
+                <input type="password" id="login_password" name="login_password" required minlength="8">
+            </div>
+            <button type="submit">Login</button>
+        </form>
+        
+    {% else %}
+        <form action="/log-out" id='log_out' method="post">
             <input type="submit" value="Log out">
         </form>
+    {% endif %}
+
 
     <script src="/app.js" defer></script>
 </body>
+
 </html>

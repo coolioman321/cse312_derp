@@ -30,17 +30,20 @@ function passwordValidation(passwordValue) {
     return ''; // Password is valid
 }
 
-// Add an event listener to the password input field
-document.getElementById('password').addEventListener('input', function() {
-    var passwordInput = document.getElementById('password');
+var passwordInput  = document.getElementById('password')
+if (passwordInput){
+    // Add an event listener to the password input field
+    document.getElementById('password').addEventListener('input', function() {
+        var passwordInput = document.getElementById('password');
 
-    // Validate the password
-    var errorMessage = passwordValidation(passwordInput.value);
-    passwordInput.setCustomValidity(errorMessage);
+        // Validate the password
+        var errorMessage = passwordValidation(passwordInput.value);
+        passwordInput.setCustomValidity(errorMessage);
 
-    // Trigger fake input event on confirmPassword field to re-validate it in case it was invalid before
-    document.getElementById('confirmPassword').dispatchEvent(new Event('input'));
-});
+        // Trigger fake input event on confirmPassword field to re-validate it in case it was invalid before
+        document.getElementById('confirmPassword').dispatchEvent(new Event('input'));
+    });
+}
 
 // Add an event listener to the confirm password input field
 document.getElementById('confirmPassword').addEventListener('input', function() {
