@@ -3,5 +3,45 @@ body {
 }
 h1 {
     background-color: coral;
+    text-align: center;
 }
 button{background-color: cadetblue}
+
+/* This is the main layout of the page */
+.page-layout {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+/* This is the left half section of the page */
+.page-content {
+    width: 50%;
+}
+
+/* This is the right half section of the page*/
+#chatSection {
+    width: 50%;
+    min-width: 200px;
+}
+
+/* This is the actual chat box */
+.chat-messages {
+    border: 1px solid #ccc;
+    height: 500px;
+    margin-bottom: 10px;
+    overflow-y: scroll;
+}
+
+/* If the screen is less than 800px wide, change the layout to a column layout */
+@media (max-width: 800px) {
+    .page-layout {
+        flex-direction: column;
+    }
+
+    .page-content,
+    #chatSection {
+        width: 100%;
+        min-width: 0;
+    }
+}
