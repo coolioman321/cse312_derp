@@ -7,6 +7,7 @@ db = mongo_client['derp']
 users = db['users']
 authToken = db['auth_token']
 
+
 def check_user_auth(token):
     if token is None:
         return False
@@ -22,3 +23,6 @@ def generate_auth_token(username):
     authToken.find_one_and_delete({"username": username})
     authToken.insert_one({"username": username, "auth_token": hashed_auth_token})
     return generated_auth_token
+
+
+

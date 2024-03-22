@@ -30,10 +30,10 @@ function passwordValidation(passwordValue) {
     return ''; // Password is valid
 }
 
-var passwordInput  = document.getElementById('password')
-if (passwordInput){
+var passwordInput = document.getElementById('password')
+if (passwordInput) {
     // Add an event listener to the password input field
-    document.getElementById('password').addEventListener('input', function() {
+    document.getElementById('password').addEventListener('input', function () {
         var passwordInput = document.getElementById('password');
 
         // Validate the password
@@ -46,15 +46,17 @@ if (passwordInput){
 }
 
 // Add an event listener to the confirm password input field
-document.getElementById('confirmPassword').addEventListener('input', function() {
-    var confirmPasswordInput = document.getElementById('confirmPassword');
-    var password = document.getElementById('password').value;
+var confirmPasswordInput = document.getElementById('confirmPassword')
+if (confirmPasswordInput) {
+    document.getElementById('confirmPassword').addEventListener('input', function () {
+        var confirmPasswordInput = document.getElementById('confirmPassword');
+        var password = document.getElementById('password').value;
 
-    // Validate the confirm password
-    if (password !== confirmPasswordInput.value) {
-        confirmPasswordInput.setCustomValidity('Passwords do not match');
-    } else {
-        confirmPasswordInput.setCustomValidity('');
-    }
-});
-
+        // Validate the confirm password
+        if (password !== confirmPasswordInput.value) {
+            confirmPasswordInput.setCustomValidity('Passwords do not match');
+        } else {
+            confirmPasswordInput.setCustomValidity('');
+        }
+    });
+}

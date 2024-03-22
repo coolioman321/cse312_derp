@@ -27,6 +27,10 @@ def escape_html(text):
     text = text.replace(">", "&gt;")
     return text
 
+def read_file_as_byte(filename):
+    with open (filename, "rb") as b_file:
+        b_body = b_file.read()
+        return b_body
 
 import re
 def extract_credentials(request_obj):
