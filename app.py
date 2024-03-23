@@ -23,6 +23,7 @@ def create_app():
         rendered_template = render_template('index.html', user_logged_in=user_auth_status)
         username = return_username_of_authenticated_user()
         if username != None: 
+            username = escape_html(username) # Escape HTML characters in username
             modified_template = rendered_template.replace("Guest", username)
             #updates guest to the current user
             rendered_template = modified_template
@@ -159,7 +160,8 @@ def create_app():
         if request.is_json:
             # Parse the JSON data
             data = request.get_json()
-            message = data.get('message', '') 
+            message = data.get('message', '')
+            message = escape_html(message) # Escape HTML characters in message
             if message == '':
                 return jsonify({"success": False, "message": "message is empty"}), 400
             
@@ -170,9 +172,10 @@ def create_app():
             
             current_unique_counter = unique_id_counter.find_one({}, {"counter":1})
 
-            response_info = {"message": message, "username": "guest", "id": f"{current_unique_counter['counter']}"}
+            response_info = {"message": message, "username": "Guest", "id": f"{current_unique_counter['counter']}"}
             username = return_username_of_authenticated_user()
             if username != None:
+                username = escape_html(username) # Escape HTML characters in username
                 response_info["username"] = username
                 
                 # Check if user's XSRF token matches the one in the database
