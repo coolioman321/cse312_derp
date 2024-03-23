@@ -24,7 +24,7 @@ def create_app():
             hash_object = hashlib.sha256(request_authToken.encode())
             hashed_token = hash_object.hexdigest()
             auth_username = authToken.find_one({"auth_token": hashed_token})
-            modified_template = rendered_template.replace("guest", auth_username["username"])
+            modified_template = rendered_template.replace("Guest", auth_username["username"])
 
             #updates guest to the current user
             rendered_template = modified_template
