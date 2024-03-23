@@ -47,7 +47,7 @@ function updateChat() {
             const messages = JSON.parse(this.response);
             for (const message of messages) {
                 addMessageToChat(message);
-                console.log(message)
+                // console.log(message)
             }
         }
     }

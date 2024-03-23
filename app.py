@@ -3,7 +3,7 @@ from pymongo import MongoClient
 from util.helper import validate_password, escape_html, extract_credentials
 import bcrypt
 import hashlib
-from util.auth_token_functions import check_user_auth, generate_auth_token
+from util.auth_token_functions import check_user_auth, generate_auth_token, return_username_of_authenticated_user
 
 mongo_client = MongoClient('mongo')
 db = mongo_client['derp']
@@ -18,16 +18,11 @@ def create_app():
     # Serve the home page
     @app.route('/')
     def home_page():
-        request_authToken = request.cookies.get('auth_token')
-        user_auth_status = check_user_auth(request_authToken)
+        user_auth_status = check_user_auth(request.cookies.get("auth_token"))
         rendered_template = render_template('index.html', user_logged_in=user_auth_status)
-
-        if user_auth_status:
-            hash_object = hashlib.sha256(request_authToken.encode())
-            hashed_token = hash_object.hexdigest()
-            auth_username = authToken.find_one({"auth_token": hashed_token})
-            modified_template = rendered_template.replace("Guest", auth_username["username"])
-
+        username = return_username_of_authenticated_user()
+        if username != None: 
+            modified_template = rendered_template.replace("Guest", username)
             #updates guest to the current user
             rendered_template = modified_template
 
@@ -161,19 +156,21 @@ def create_app():
                 unique_id_counter.insert_one({"counter": 1})
             
             current_unique_counter = unique_id_counter.find_one({}, {"counter":1})
+
             response_info = {"message": message, "username": "guest", "id": f"{current_unique_counter['counter']}"}
+            username = return_username_of_authenticated_user()
+            if username != None:
+                response_info["username"] = username
 
             #insert current message into DB
             chat_collection.insert_one(response_info)
-            
+
             #increment the counter by 1
             query = {"counter": {"$exists": True}}
             new_values = {"$set": {"counter": current_unique_counter['counter']+1}}
             unique_id_counter.update_one(query, new_values)
 
             # print(f"message: {message}")  
-
-            #stores the post message in a database
 
             # Send a response back to the frontend
             return jsonify({"success": True, "message": f"id: {current_unique_counter['counter']} message:{message}"}), 200
