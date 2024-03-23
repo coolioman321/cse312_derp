@@ -1,6 +1,7 @@
 function sendChat() {
     const chatTextBox = document.getElementById("chat-text-box");
     const message = chatTextBox.value;
+    const xsrfToken = document.getElementById("xsrf-token").value; // Get the XSRF token
     chatTextBox.value = "";
 
     const request = new XMLHttpRequest();
@@ -11,6 +12,7 @@ function sendChat() {
     }
     const messageJSON = {
         "message": message,
+        "xsrf_token": xsrfToken // Add the XSRF token to the message
     };
     request.open("POST", "/chat-messages");
     request.setRequestHeader("Content-Type", "application/json");
