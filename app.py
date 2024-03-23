@@ -4,6 +4,7 @@ from util.helper import validate_password, escape_html, extract_credentials
 import bcrypt
 import hashlib
 from util.auth_token_functions import check_user_auth, generate_auth_token, return_username_of_authenticated_user
+import secrets
 
 mongo_client = MongoClient('mongo')
 db = mongo_client['derp']
@@ -25,6 +26,18 @@ def create_app():
             modified_template = rendered_template.replace("Guest", username)
             #updates guest to the current user
             rendered_template = modified_template
+            
+            # Retrieve XSRF token for this user from the database
+            user_record = users.find_one({"username": username})
+            if user_record:
+                xsrf_token = user_record.get("xsrf_token", None)
+                # Or generate a new one if it doesn't exist
+                if xsrf_token is None:
+                    # Generate a new XSRF token
+                    xsrf_token = secrets.token_hex(16)
+                    users.update_one({"username": username}, {"$set": {"xsrf_token": xsrf_token}})
+                # Inject the XSRF token into the value of the hidden input field
+                rendered_template = rendered_template.replace("REPLACE_THIS_XSRF_TOKEN", xsrf_token)              
 
         # Create a response object from the rendered template
         response = make_response(rendered_template)
@@ -161,6 +174,14 @@ def create_app():
             username = return_username_of_authenticated_user()
             if username != None:
                 response_info["username"] = username
+                
+                # Check if user's XSRF token matches the one in the database
+                user_record = users.find_one({"username": username})
+                if user_record:
+                    xsrf_token = user_record.get("xsrf_token", None)
+                    # If token doesn't match, return a 403 error
+                    if xsrf_token != data.get("xsrf_token"):
+                        return jsonify({"success": False, "message": "XSRF token does not match"}), 403
 
             #insert current message into DB
             chat_collection.insert_one(response_info)
