@@ -33,6 +33,14 @@ button{background-color: cadetblue}
     overflow-y: scroll;
 }
 
+/* This is the actual chat text box with increased width and padding */
+#chat-text-box {
+    width: 100%; 
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+
 /* If the screen is less than 800px wide, change the layout to a column layout */
 @media (max-width: 800px) {
     .page-layout {
@@ -45,3 +53,4 @@ button{background-color: cadetblue}
         min-width: 0;
     }
 }
+
