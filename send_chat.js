@@ -40,6 +40,16 @@ function chatMessageHTML(messageJSON) {
     return messageHTML;
 }
 
+function deleteMessage(messageId) {
+    const request = new XMLHttpRequest();
+    request.onreadystatechange = function () {
+        if (this.readyState === 4 && this.status === 200) {
+            console.log(this.response);
+        }
+    }
+    request.open("DELETE", "/chat-messages/" + messageId);
+    request.send();
+}
 
 function addMessageToChat(messageJSON) {
     const chatMessages = document.getElementById("chat-messages");

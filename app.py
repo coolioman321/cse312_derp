@@ -291,8 +291,37 @@ def create_app():
                 return jsonify({"error": "Unauthorized"}), 401
 
             return jsonify({"error": "Unauthorized"}), 401
+    @app.route('/chat-messages/<message_id>', methods=['DELETE'])
+    def delete_chat_message(message_id):
+        # Check if the auth token is present
+        request_auth_token = request.cookies.get('auth_token')
+        if request_auth_token is None:
+            return jsonify({"error": "Unauthorized - No auth token provided"}), 401
 
+        # Verify the auth token
+        hash_object = hashlib.sha256(request_auth_token.encode())
+        hashed_request_authToken = hash_object.hexdigest()
+        username_authToken = authToken.find_one({"auth_token": hashed_request_authToken})
 
+        if username_authToken is None:
+            return jsonify({"error": "Unauthorized - Invalid auth token"}), 401
+
+        # Check if the user is authorized to delete the message
+        # (assuming the 'username' field in the message document indicates the message owner)
+        message = chat_collection.find_one({"id": message_id})
+        if message is None:
+            return jsonify({"error": "Message not found"}), 404
+
+        if username_authToken['username'] != message.get('username', ''):
+            return jsonify({"error": "Unauthorized - User cannot delete this message"}), 403
+
+        # Proceed with message deletion
+        result = chat_collection.delete_one({"id": message_id})
+
+        if result.deleted_count > 0:
+            return jsonify({"success": True, "message": "Message deleted successfully."}), 200
+        else:
+            return jsonify({"error": "Message not found or could not be deleted"}), 404
     return app
 
 if __name__ == "__main__":
