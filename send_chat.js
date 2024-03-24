@@ -28,14 +28,14 @@ function chatMessageHTML(messageJSON) {
     const DislikeCount = messageJSON.dislike_count || 0; //check existing like count, set 0  if none exists
 
     let messageHTML = "<br><button onclick='deleteMessage(\"" + messageId + "\")'>X</button> ";
-    messageHTML += "<span id='message_" + messageId + "'><b>" + username + "</b>: " + message + "</span>";
-
+    
     messageHTML += "<button class ='like-button' onclick='likeMessage(\"" + messageId + "\")'>&#x1F44D;</button>";
     messageHTML += "<span id='like_count_" + messageId + "' data-initial-count='" + LikeCount + "'>" + LikeCount + "</span>";
 
     messageHTML += "<button class ='dislike-button' onclick='dislikeMessage(\"" + messageId + "\")'>&#x1F44E;</button>";
     messageHTML += "<span id='dislike_count_" + messageId + "' data-initial-count='" + DislikeCount + "'>" + DislikeCount + "</span>";
 
+    messageHTML += "<span id='message_" + messageId + "'><b>" + username + "</b>: " + message + "</span>";
 
     return messageHTML;
 }
