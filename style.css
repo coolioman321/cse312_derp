@@ -54,3 +54,8 @@ button{background-color: cadetblue}
     }
 }
 
+.like-button,
+.dislike-button {
+    font-size: 10px;
+    padding: 4px 8px;
+}

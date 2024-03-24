@@ -22,10 +22,22 @@ function chatMessageHTML(messageJSON) {
     const username = messageJSON.username;
     const message = messageJSON.message;
     const messageId = messageJSON.id;
+    const LikeCount = messageJSON.like_count || 0; //check existing like count, set 0  if none exists
+    const DislikeCount = messageJSON.dislike_count || 0; //check existing like count, set 0  if none exists
+
     let messageHTML = "<br><button onclick='deleteMessage(\"" + messageId + "\")'>X</button> ";
     messageHTML += "<span id='message_" + messageId + "'><b>" + username + "</b>: " + message + "</span>";
+
+    messageHTML += "<button class ='like-button' onclick='likeMessage(\"" + messageId + "\")'>&#x1F44D;</button>";
+    messageHTML += "<span id='like_count_" + messageId + "' data-initial-count='" + LikeCount + "'>" + LikeCount + "</span>";
+
+    messageHTML += "<button class ='dislike-button' onclick='dislikeMessage(\"" + messageId + "\")'>&#x1F44E;</button>";
+    messageHTML += "<span id='dislike_count_" + messageId + "' data-initial-count='" + DislikeCount + "'>" + DislikeCount + "</span>";
+
+
     return messageHTML;
 }
+
 
 function addMessageToChat(messageJSON) {
     const chatMessages = document.getElementById("chat-messages");
@@ -53,6 +65,54 @@ function updateChat() {
     }
     request.open("GET", "/chat-messages");
     request.send();
+}
+
+function likeMessage(messageId) {
+    const request = new XMLHttpRequest();
+    const elem = document.getElementById('like_count_' + messageId);
+
+    if (elem) {
+        let currentLikeCount = parseInt(elem.dataset.initialCount); //get current like count val
+        currentLikeCount++; //increment like count
+        elem.textContent = currentLikeCount; // update count visually
+        const data = {
+            "messageId": messageId,
+            "likecount": currentLikeCount
+        };
+        request.onreadystatechange = function() {
+            if (this.readyState === 4 && this.status === 200) {
+                console.log(this.response);
+
+            }
+        };
+        request.open("PUT", "/chat-messages/like/" + messageId);
+        request.setRequestHeader("Content-Type", "application/json");
+        request.send(JSON.stringify(data));
+    }
+}
+
+function dislikeMessage(messageId){
+    const request = new XMLHttpRequest();
+    const elem = document.getElementById('dislike_count_' + messageId);
+
+    if (elem) {
+        let currentDislikeCount = parseInt(elem.dataset.initialCount); //get current like count val
+        currentDislikeCount++; //deccrement like count
+        elem.textContent = currentDislikeCount; // update count visually
+        const data = {
+            "messageId": messageId,
+            "dislikecount": currentDislikeCount
+        };
+        request.onreadystatechange = function() {
+            if (this.readyState === 4 && this.status === 200) {
+                console.log(this.response);
+
+            }
+        };
+        request.open("PUT", "/chat-messages/dislike/" + messageId);
+        request.setRequestHeader("Content-Type", "application/json");
+        request.send(JSON.stringify(data));
+    }
 }
 
 updateChat();
