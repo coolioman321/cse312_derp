@@ -3,6 +3,7 @@ from pymongo import MongoClient
 from util.helper import validate_password, escape_html, extract_credentials
 import bcrypt
 import hashlib
+import json
 from util.auth_token_functions import check_user_auth, generate_auth_token, return_username_of_authenticated_user
 import secrets
 
@@ -12,6 +13,8 @@ users = db['users']
 authToken = db['auth_token']
 unique_id_counter = db['counter']
 chat_collection = db['chat']
+liked_messages = db['liked_messages']
+disliked_messages = db['disliked_messages']
 
 def create_app():
     app = Flask(__name__)
@@ -212,6 +215,83 @@ def create_app():
             response_list.append(document)
         
         return jsonify(response_list)
+
+    @app.route('/chat-messages/like/<int:message_id>', methods=['PUT'])
+    def chat_messages_like(message_id):
+
+        if chat_collection.find_one({"id": str(message_id)}) != None:
+            exists = chat_collection.find_one({"id": str(message_id)})
+            request_auth_token = request.cookies.get('auth_token')
+
+        # if request have a cookie of auth token
+            if request_auth_token != None:
+                hash_object = hashlib.sha256(request_auth_token.encode())
+                hashed_request_authToken = hash_object.hexdigest()
+                username_authToken = authToken.find_one({"auth_token": hashed_request_authToken})
+                username_auth = username_authToken["username"]
+                user_of_message_clicked = exists["username"]
+                if username_auth != user_of_message_clicked:
+                    print("usernames not the same")
+                #cannot like your own messages
+                    if(liked_messages.find_one({"username" : username_auth, "id" : str(message_id)}) is None and (disliked_messages.find_one({"username" : username_auth, "id" : str(message_id)}) is None)):
+                        #if the message has already been liked by this user or already disliked
+                        if request.is_json:
+                        # Parse the JSON data
+
+                            record  = request.get_json()
+                            like_count = int(record["likecount"])
+                            message_id = record["messageId"]
+                            chat_collection.update_one({"id": message_id},
+                                           {"$set": {"like_count": like_count}})
+                            liked_messages.insert_one({"username" : username_auth, "id" : str(message_id)})
+                            return jsonify({"like_count": like_count}), 200
+                        else:
+                            return jsonify({"success": False, "message": "Request was not JSON."}), 400
+                    else:
+                        return jsonify({"error": "Unauthorized"}), 401
+
+                return jsonify({"error": "Unauthorized"}), 401
+
+            return jsonify({"error": "Unauthorized"}), 401
+
+    @app.route('/chat-messages/dislike/<int:message_id>', methods=['PUT'])
+    def chat_messages_dislike(message_id):
+
+        if chat_collection.find_one({"id": str(message_id)}) != None:
+            exists = chat_collection.find_one({"id": str(message_id)})
+            request_auth_token = request.cookies.get('auth_token')
+
+            # if request have a cookie of auth token
+            if request_auth_token != None:
+                hash_object = hashlib.sha256(request_auth_token.encode())
+                hashed_request_authToken = hash_object.hexdigest()
+                username_authToken = authToken.find_one({"auth_token": hashed_request_authToken})
+                username_auth = username_authToken["username"]
+                user_of_message_clicked = exists["username"]
+                if username_auth != user_of_message_clicked:
+                    print("usernames not the same")
+                    #cannot like your own messages
+                    if(liked_messages.find_one({"username" : username_auth, "id" : str(message_id)}) is None and (disliked_messages.find_one({"username" : username_auth, "id" : str(message_id)}) is None)):
+                        #if the message has already been liked by this user or already disliked
+                        if request.is_json:
+                            # Parse the JSON data
+
+                            record  = request.get_json()
+                            dislike_count = int(record["dislikecount"])
+                            message_id = record["messageId"]
+                            chat_collection.update_one({"id": message_id},
+                                                       {"$set": {"dislike_count": dislike_count}})
+                            disliked_messages.insert_one({"username" : username_auth, "id" : str(message_id)})
+                            return jsonify({"dislike_count": dislike_count}), 200
+                        else:
+                            return jsonify({"success": False, "message": "Request was not JSON."}), 400
+                    else:
+                        return jsonify({"error": "Unauthorized"}), 401
+
+                return jsonify({"error": "Unauthorized"}), 401
+
+            return jsonify({"error": "Unauthorized"}), 401
+
 
     return app
 
