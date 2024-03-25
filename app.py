@@ -139,6 +139,7 @@ def create_app():
                 response.set_cookie('auth_token', generated_auth_token, max_age=3600, httponly=True)  # Expires in 1 hour
                 authToken.find_one_and_delete({"username": username})
                 authToken.insert_one({"username": username, "auth_token": hashed_auth_token})
+                response.headers["X-Content-Type-Options"] = "nosniff"
                 return response
 
         return redirect(url_for('home_page'))
@@ -155,6 +156,7 @@ def create_app():
 
         response = make_response(redirect(url_for('home_page')))
         response.set_cookie('auth_token', '', expires=0)  # Clear the cookie
+        response.headers["X-Content-Type-Options"] = "nosniff"
         return response
     
     @app.route('/chat-messages', methods=['POST'])
