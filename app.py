@@ -155,7 +155,7 @@ def create_app():
             authToken.delete_one({"auth_token": hashed_token})
 
         response = make_response(redirect(url_for('home_page')))
-        response.set_cookie('auth_token', '', expires=0)  # Clear the cookie
+        response.set_cookie('auth_token', '', expires=0, httponly=True)  # Clear the cookie
         response.headers["X-Content-Type-Options"] = "nosniff"
         return response
     
