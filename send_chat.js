@@ -33,7 +33,7 @@ function chatMessageHTML(messageJSON) {
     messageHTML += "<span id='like_count_" + messageId + "' data-initial-count='" + LikeCount + "'>" + LikeCount + "</span>";
 
     messageHTML += "<button class ='dislike-button' onclick='dislikeMessage(\"" + messageId + "\")'>&#x1F44E;</button>";
-    messageHTML += "<span id='dislike_count_" + messageId + "' data-initial-count='" + DislikeCount + "'>" + DislikeCount + "</span>";
+    messageHTML += "<span id='dislike_count_" + messageId + "' data-initial-count='" + DislikeCount + "'>" + DislikeCount + "</span>" + " ";
 
     messageHTML += "<span id='message_" + messageId + "'><b>" + username + "</b>: " + message + "</span>";
 
