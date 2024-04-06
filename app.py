@@ -6,6 +6,7 @@ import hashlib
 import json
 from util.auth_token_functions import check_user_auth, generate_auth_token, return_username_of_authenticated_user
 import secrets
+import os
 
 mongo_client = MongoClient('mongo')
 db = mongo_client['derp']
@@ -15,6 +16,8 @@ unique_id_counter = db['counter']
 chat_collection = db['chat']
 liked_messages = db['liked_messages']
 disliked_messages = db['disliked_messages']
+
+file_count = 0
 
 def create_app():
     app = Flask(__name__)
@@ -293,6 +296,7 @@ def create_app():
                 return jsonify({"error": "Unauthorized"}), 401
 
             return jsonify({"error": "Unauthorized"}), 401
+        
     @app.route('/chat-messages/<message_id>', methods=['DELETE'])
     def delete_chat_message(message_id):
         # Check if the auth token is present
@@ -324,8 +328,21 @@ def create_app():
             return jsonify({"success": True, "message": "Message deleted successfully."}), 200
         else:
             return jsonify({"error": "Message not found or could not be deleted"}), 404
+
+    @app.route('/upload', methods=['POST'])
+    def upload_file():
+        # Check if the POST request has the file part
+        if 'file' not in request.files:
+            return redirect(url_for('home_page'))
+        file = request.files['file']
+        
+        # If the user does not select a file, the browser submits an empty part without a filename.
+        if file.filename == '':
+            return redirect(url_for('home_page'))
+    
     return app
 
+    
 if __name__ == "__main__":
     app = create_app()
     app.run(debug=True, host="0.0.0.0", port=8080)
