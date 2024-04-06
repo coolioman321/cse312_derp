@@ -358,6 +358,20 @@ def create_app():
         else:
             return redirect(url_for('home_page'))
     
+        # Generate unique filename with its extension
+        global file_count
+        file_count += 1
+        filename = f'file_{file_count}.{file_extension}'
+        filename = filename.replace('/', '') # Prevent directory traversal
+        filepath = os.path.join('images', filename)
+        print("filename: ", filename, flush=True)
+        print("filepath: ", filepath, flush=True)
+        
+        # Save the file to disk
+        with open(filepath, 'wb') as f:
+            f.write(file_signature)
+            f.write(file.read())
+
     return app
 
     
