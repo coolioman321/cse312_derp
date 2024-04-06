@@ -339,6 +339,24 @@ def create_app():
         # If the user does not select a file, the browser submits an empty part without a filename.
         if file.filename == '':
             return redirect(url_for('home_page'))
+        
+        # Read file signature from first 16 bytes
+        file_signature = file.read(16)
+        
+        # Check for jpg signature
+        if file_signature[:2] == b'\xFF\xD8':
+            file_extension = 'jpg'
+        # Check for png signature
+        elif file_signature[:8] == b'\x89\x50\x4E\x47\x0D\x0A\x1A\x0A':
+            file_extension = 'png'
+        # Check for gif signature
+        elif file_signature[:6] in [b'GIF87a', b'GIF89a']:
+            file_extension = 'gif'
+        # Check for mp4 signature
+        elif b'ftypisom' in file_signature or b'ftypmp42' in file_signature or b'ftypMSNV' in file_signature:
+            file_extension = 'mp4'
+        else:
+            return redirect(url_for('home_page'))
     
     return app
 
