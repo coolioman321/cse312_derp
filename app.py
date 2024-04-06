@@ -236,7 +236,7 @@ def create_app():
                     print("usernames not the same")
                 #cannot like your own messages
                     if(liked_messages.find_one({"username" : username_auth, "id" : str(message_id)}) is None and (disliked_messages.find_one({"username" : username_auth, "id" : str(message_id)}) is None)):
-                        #if the message has already been liked by this user or already disliked
+                        #if the message hasn't been liked or disliked by this user already
                         if request.is_json:
                         # Parse the JSON data
 
@@ -245,10 +245,30 @@ def create_app():
                             message_id = record["messageId"]
                             chat_collection.update_one({"id": message_id},
                                            {"$set": {"like_count": like_count}})
+                            chat_collection.update_one({"id": message_id},
+                                                   {"$set": {"alreadyLiked": True}})
+
                             liked_messages.insert_one({"username" : username_auth, "id" : str(message_id)})
                             return jsonify({"like_count": like_count}), 200
                         else:
                             return jsonify({"success": False, "message": "Request was not JSON."}), 400
+                    elif(liked_messages.find_one({"username" : username_auth, "id" : str(message_id)}) is not None and (disliked_messages.find_one({"username" : username_auth, "id" : str(message_id)}) is None)):
+                        #if the message has been liked already, unlike it
+                        if request.is_json:
+                            # Parse the JSON data
+                            record  = request.get_json()
+                            like_count = int(record["likecount"])
+                            message_id = record["messageId"]
+                            chat_collection.update_one({"id": message_id},
+                                                       {"$set": {"like_count": like_count}})
+                            chat_collection.update_one({"id": message_id},
+                                                       {"$set": {"alreadyLiked": False}})
+
+                            liked_messages.delete_one({"username" : username_auth, "id" : str(message_id)})
+                            return jsonify({"like_count": like_count}), 200
+                        else:
+                            return jsonify({"success": False, "message": "Request was not JSON."}), 400
+
                     else:
                         return jsonify({"error": "Unauthorized"}), 401
 
@@ -283,7 +303,24 @@ def create_app():
                             message_id = record["messageId"]
                             chat_collection.update_one({"id": message_id},
                                                        {"$set": {"dislike_count": dislike_count}})
+                            chat_collection.update_one({"id": message_id},
+                                                       {"$set": {"alreadyDisliked": True}})
                             disliked_messages.insert_one({"username" : username_auth, "id" : str(message_id)})
+                            return jsonify({"dislike_count": dislike_count}), 200
+                        else:
+                            return jsonify({"success": False, "message": "Request was not JSON."}), 400
+                    elif(liked_messages.find_one({"username" : username_auth, "id" : str(message_id)}) is None and (disliked_messages.find_one({"username" : username_auth, "id" : str(message_id)}) is not None)):
+                        #if the message has been liked already, unlike it
+                        if request.is_json:
+                            # Parse the JSON dat
+                            record  = request.get_json()
+                            dislike_count = int(record["dislikecount"])
+                            message_id = record["messageId"]
+                            chat_collection.update_one({"id": message_id},
+                                                       {"$set": {"dislike_count": dislike_count}})
+                            chat_collection.update_one({"id": message_id},
+                                                       {"$set": {"alreadyDisliked": False}})
+                            disliked_messages.delete_one({"username" : username_auth, "id" : str(message_id)})
                             return jsonify({"dislike_count": dislike_count}), 200
                         else:
                             return jsonify({"success": False, "message": "Request was not JSON."}), 400

@@ -26,14 +26,15 @@ function chatMessageHTML(messageJSON) {
     const messageId = messageJSON.id;
     const LikeCount = messageJSON.like_count || 0; //check existing like count, set 0  if none exists
     const DislikeCount = messageJSON.dislike_count || 0; //check existing like count, set 0  if none exists
-
+    const alreadyLiked = messageJSON.alreadyLiked || false;
+    const alreadyDisliked = messageJSON.alreadyDisliked || false;
     let messageHTML = `
     <br>
     <button onclick='deleteMessage("${messageId}")'>X</button>
-    <button class='like-button' onclick='likeMessage("${messageId}")'>&#x1F44D;</button>
-    <span id='like_count_${messageId}' data-initial-count='${LikeCount}'>${LikeCount}</span>
+    <button class='like-button' onclick='likeMessage("${messageId}","${alreadyLiked}")'>&#x1F44D;</button>
+    <span id='like_count_${messageId}' data-initial-count='${LikeCount}'data-already-liked='${alreadyLiked}'>${LikeCount}</span>
     <button class='dislike-button' onclick='dislikeMessage("${messageId}")'>&#x1F44E;</button>
-    <span id='dislike_count_${messageId}' data-initial-count='${DislikeCount}'>${DislikeCount}</span>
+    <span id='dislike_count_${messageId}' data-initial-count='${DislikeCount}'data-already-disliked='${alreadyDisliked}'>${DislikeCount}</span>
     <span id='message_${messageId}'><b>${username}</b>: ${message}</span>
 `;
 
@@ -79,18 +80,30 @@ function updateChat() {
     request.send();
 }
 
+
 function likeMessage(messageId) {
+
     const request = new XMLHttpRequest();
     const elem = document.getElementById('like_count_' + messageId);
 
     if (elem) {
         let currentLikeCount = parseInt(elem.dataset.initialCount); //get current like count val
-        currentLikeCount++; //increment like count
+        console.log(elem.dataset.alreadyLiked);
+        console.log(typeof elem.dataset.alreadyLiked);
+        if(elem.dataset.alreadyLiked === "false"){
+            console.log("incremeneting");
+            currentLikeCount++;
+        }else{
+            console.log("dec");
+            currentLikeCount--;
+        }
+        //increment like count}
         const data = {
             "messageId": messageId,
             "likecount": currentLikeCount
         };
-        request.onreadystatechange = function() {
+
+        request.onreadystatechange = function () {
             if (this.readyState === 4 && this.status === 200) {
                 console.log(this.response);
                 elem.textContent = currentLikeCount; // update count visually
@@ -99,7 +112,9 @@ function likeMessage(messageId) {
         request.open("PUT", "/chat-messages/like/" + messageId);
         request.setRequestHeader("Content-Type", "application/json");
         request.send(JSON.stringify(data));
-    }
+
+}
+
 }
 
 function dislikeMessage(messageId){
@@ -108,7 +123,15 @@ function dislikeMessage(messageId){
 
     if (elem) {
         let currentDislikeCount = parseInt(elem.dataset.initialCount); //get current like count val
-        currentDislikeCount++; //deccrement like count
+
+
+        if(elem.dataset.alreadyDisliked === "false"){
+            console.log("incremeneting");
+            currentDislikeCount++; //deccrement like count
+        }else{
+            console.log("dec");
+            currentDislikeCount--;
+        }
         const data = {
             "messageId": messageId,
             "dislikecount": currentDislikeCount
