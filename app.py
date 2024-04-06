@@ -364,8 +364,6 @@ def create_app():
         filename = f'file_{file_count}.{file_extension}'
         filename = filename.replace('/', '') # Prevent directory traversal
         filepath = os.path.join('images', filename)
-        print("filename: ", filename, flush=True)
-        print("filepath: ", filepath, flush=True)
         
         # Save the file to disk
         with open(filepath, 'wb') as f:
