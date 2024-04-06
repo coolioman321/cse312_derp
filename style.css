@@ -28,7 +28,7 @@ button{background-color: cadetblue}
 /* This is the actual chat box */
 .chat-messages {
     border: 1px solid #ccc;
-    height: 500px;
+    height: 400px;
     margin-bottom: 10px;
     overflow-y: scroll;
 }

@@ -64,9 +64,15 @@
         </div>
         <form id="chatForm">
             <input type="text" id="chat-text-box" name="message" required placeholder="Type your message here...">
-            <br>
-            <br>
             <button type="submit" class="send_button" onclick="sendChat()">Send</button>
+
+        </form>
+
+        <!--Upload file form-->
+        <form action="/upload" method="post" enctype="multipart/form-data">
+            <label for="file">Upload image or video:</label>
+            <input id="file-upload" type="file" name="file">
+            <input type="submit" value="Upload">
         </form>
     </section>
 </div>
