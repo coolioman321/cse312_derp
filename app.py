@@ -6,6 +6,9 @@ import hashlib
 import json
 from util.auth_token_functions import check_user_auth, generate_auth_token, return_username_of_authenticated_user
 import secrets
+from werkzeug.utils import secure_filename
+import os
+
 
 mongo_client = MongoClient('mongo')
 db = mongo_client['derp']
@@ -16,12 +19,40 @@ chat_collection = db['chat']
 liked_messages = db['liked_messages']
 disliked_messages = db['disliked_messages']
 
+
+FILE_SIGNATURES = {
+    'jpg': [b'\xFF\xD8'],
+    'png': [b'\x89\x50\x4E\x47\x0D\x0A\x1A\x0A'],
+    'gif': [b'\x47\x49\x46\x38\x37\x61', b'\x47\x49\x46\x38\x39\x61'],
+    'mp4': [b'\x66\x74\x79\x70'] 
+    # Add more signatures as needed
+}
+
+
+def file_signature_matches(file, signatures: dict):
+    file_start = file.read(15) 
+    file.seek(0)  # Reset file pointer to the start
+
+    for extension, sig_list in signatures.items():
+        for sig in sig_list:
+            if sig in file_start:  # Changed to 'in' to search within the first 1024 bytes
+                return True
+    return False
+
+
+
 def create_app():
+
+    print()
+
     app = Flask(__name__)
+    UPLOAD_FOLDER = 'images'
+    app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
     # Serve the home page
     @app.route('/')
     def home_page():
+        print("Flask app is running!")
         user_auth_status = check_user_auth(request.cookies.get("auth_token"))
         rendered_template = render_template('index.html', user_logged_in=user_auth_status)
         username = return_username_of_authenticated_user()
@@ -324,8 +355,48 @@ def create_app():
             return jsonify({"success": True, "message": "Message deleted successfully."}), 200
         else:
             return jsonify({"error": "Message not found or could not be deleted"}), 404
+    
+    @app.route('/upload-images', methods=['POST'])
+    def upload_file():
+        
+        print(f"files: {request.files}", flush= True)
+        if 'images' not in request.files:
+            print('No file part', flush=True)
+            return 'no file part'
+        file = request.files['images']
+        if file.filename == '':
+            print('No selected file', flush=True)
+            return redirect(url_for('home_page'))
+        if file and file_signature_matches(file, FILE_SIGNATURES):
+            print(f"filename: {file.filename}", flush=True)
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+
+            document_count = unique_id_counter.count_documents({})
+            if document_count == 0: 
+                unique_id_counter.insert_one({"counter": 1})
+            
+            current_unique_counter = unique_id_counter.find_one({}, {"counter":1})
+            message = f'<img src="/images/{filename}" alt="Uploaded image" style="max-width: 100%; max-height: 100%;">'
+            response_info = {"message": message, "username": "Guest", "id": f"{current_unique_counter['counter']}"}
+
+            username = return_username_of_authenticated_user()
+            if username is not None:
+                username = escape_html(username)
+                response_info["username"] = username
+            chat_collection.insert_one(response_info)
+
+            return redirect(url_for('home_page'))
+
+        else:
+            return 'Invalid file type'
+        
+    
     return app
 
+
+
 if __name__ == "__main__":
+    print("Flask app starting...")
     app = create_app()
     app.run(debug=True, host="0.0.0.0", port=8080)

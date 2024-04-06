@@ -10,5 +10,6 @@ services:
       - .:/root
     environment:
       WAIT_HOSTS: mongo:27017
+      FLASK_ENV: development
     ports:
       - '8080:8080'

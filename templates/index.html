@@ -1,23 +1,25 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Tester Page</title>
-    <link rel="stylesheet" type="text/css" href="/style.css"/>
+    <link rel="stylesheet" type="text/css" href="/style.css" />
 </head>
+
 <body>
 
-<header>
-    <h1>WELCOME</h1>
-</header>
+    <header>
+        <h1>WELCOME</h1>
+    </header>
 
-<div class="page-layout">
-    <div class="page-content">
-        <h2>Guest</h2>
-        <div class="image_div">
-            <img src="/images/download.jpg" alt="ME rn" class="my_image" />
-        </div>
+    <div class="page-layout">
+        <div class="page-content">
+            <h2>Guest</h2>
+            <div class="image_div">
+                <img src="/images/download.jpg" alt="ME rn" class="my_image" />
+            </div>
 
-        {% if not user_logged_in %}
+            {% if not user_logged_in %}
             <!-- Registration Form -->
             <form id="registrationForm" action="/register" method="POST">
                 <h2>Register</h2>
@@ -49,31 +51,44 @@
                 </div>
                 <button type="submit">Login</button>
             </form>
-        {% else %}
+            {% else %}
             <form action="/log-out" id='log_out' method="post">
                 <input type="submit" value="Log out">
             </form>
             {% endif %}
         </div>
 
-    <!-- Chat Section -->
-    <section id="chatSection">
-        <h2>Chat</h2>
-        <div id="chat-messages" class="chat-messages">
-            <!-- Messages will be loaded here -->
-        </div>
-        <form id="chatForm">
-            <input type="text" id="chat-text-box" name="message" required placeholder="Type your message here...">
-            <br>
-            <br>
-            <button type="submit" class="send_button" onclick="sendChat()">Send</button>
-        </form>
-    </section>
-</div>
-<input type="hidden" id="xsrf-token" name="xsrf_token" value="REPLACE_THIS_XSRF_TOKEN">
+        <!-- Chat Section -->
+        <section id="chatSection">
+            <h2>Chat</h2>
+            <div id="chat-messages" class="chat-messages">
+                <!-- Messages will be loaded here -->
+            </div>
+            <form id="chatForm">
+                <input type="text" id="chat-text-box" name="message" required placeholder="Type your message here...">
+                <br>
+                <br>
+                <button type="submit" class="send_button" onclick="sendChat()">Send</button>
+            </form>
+        </section>
 
-<script src="../app.js" defer></script>
-<script src="../send_chat.js"></script>
-<!-- <script src="../webrtc.js" defer></script> -->
+        <!-- Image Upload Form -->
+        <form id="imageUploadForm" action="/upload-images" method="POST" enctype="multipart/form-data">
+            <h2>Upload Images</h2>
+            <div>
+                <label for="imageUpload">Select images:</label>
+                <input type="file" id="imageUpload" name="images" accept="image/*" gif, jpg, png required>
+            </div>
+            <button type="submit">Upload</button>
+        </form>
+
+
+    </div>
+    <input type="hidden" id="xsrf-token" name="xsrf_token" value="REPLACE_THIS_XSRF_TOKEN">
+
+    <script src="../app.js" defer></script>
+    <script src="../send_chat.js"></script>
+    <!-- <script src="../webrtc.js" defer></script> -->
 </body>
+
 </html>
