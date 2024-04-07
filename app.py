@@ -357,7 +357,7 @@ def create_app():
             file_extension = 'mp4'
         else:
             return redirect(url_for('home_page'))
-    
+        
         # Generate unique filename with its extension
         global file_count
         file_count += 1
@@ -369,6 +369,32 @@ def create_app():
         with open(filepath, 'wb') as f:
             f.write(file_signature)
             f.write(file.read())
+
+        # Create img tag for jpg, png, and gif files
+        if file_extension in ['jpg', 'png', 'gif']:
+            msg = f'<img src="/images/{filename}" alt="Uploaded image" style="max-width: 100%; max-height: 100%;">'
+        # Create video tag for mp4 files
+        elif file_extension == 'mp4':
+            msg = f'<video controls autoplay muted style="max-width: 100%; max-height: 100%;"><source src="/images/{filename}" type="video/mp4">Your browser does not support the video tag.</video>'
+
+        # Generate unique ID for the chat message
+        document_count = unique_id_counter.count_documents({})
+        if document_count == 0: 
+            unique_id_counter.insert_one({"counter": 1})
+        current_unique_counter = unique_id_counter.find_one({}, {"counter":1})
+        
+        # If auth_token cookie exists, set username of the user with that token
+        username = return_username_of_authenticated_user()
+        if username is not None:
+            username = escape_html(username)
+        else:
+            username = 'Guest'
+            
+        # Insert the chat message into the database
+        chat_collection.insert_one({"message": msg, "username": username, "id": f"{current_unique_counter['counter']}"})
+        
+        # Return to the homepage
+        return redirect(url_for('home_page'))
 
     return app
 
