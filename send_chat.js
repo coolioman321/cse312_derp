@@ -26,17 +26,15 @@ function chatMessageHTML(messageJSON) {
     const messageId = messageJSON.id;
     const LikeCount = messageJSON.like_count || 0; //check existing like count, set 0  if none exists
     const DislikeCount = messageJSON.dislike_count || 0; //check existing like count, set 0  if none exists
-
     let messageHTML = `
     <br>
     <button onclick='deleteMessage("${messageId}")'>X</button>
     <button class='like-button' onclick='likeMessage("${messageId}")'>&#x1F44D;</button>
-    <span id='like_count_${messageId}' data-initial-count='${LikeCount}'>${LikeCount}</span>
+    <span id='like_count_${messageId}'>${LikeCount}</span>
     <button class='dislike-button' onclick='dislikeMessage("${messageId}")'>&#x1F44E;</button>
-    <span id='dislike_count_${messageId}' data-initial-count='${DislikeCount}'>${DislikeCount}</span>
+    <span id='dislike_count_${messageId}'>${DislikeCount}</span>
     <span id='message_${messageId}'><b>${username}</b>: ${message}</span>
 `;
-
     return messageHTML;
 }
 
@@ -79,53 +77,62 @@ function updateChat() {
     request.send();
 }
 
-function likeMessage(messageId) {
-    const request = new XMLHttpRequest();
-    const elem = document.getElementById('like_count_' + messageId);
 
-    if (elem) {
-        let currentLikeCount = parseInt(elem.dataset.initialCount); //get current like count val
-        currentLikeCount++; //increment like count
-        const data = {
-            "messageId": messageId,
-            "likecount": currentLikeCount
-        };
-        request.onreadystatechange = function() {
-            if (this.readyState === 4 && this.status === 200) {
-                console.log(this.response);
-                elem.textContent = currentLikeCount; // update count visually
+function likeMessage(messageId) {
+
+    const request = new XMLHttpRequest();
+
+    const data = {
+        "messageId": messageId,
+    };
+
+    request.onreadystatechange = function () {
+        if (this.readyState === 4 && this.status === 200) {
+            // this message includes the updated like count
+
+            const like_and_dislike_count_obj = JSON.parse(this.response)
+            console.log(like_and_dislike_count_obj)
+            const likeCountElement = document.getElementById('like_count_' + messageId);
+            const dislikeCountElement = document.getElementById('dislike_count_' + messageId);
+            if (likeCountElement && dislikeCountElement) {
+                likeCountElement.textContent = like_and_dislike_count_obj.like_count;
+                dislikeCountElement.textContent = like_and_dislike_count_obj.dislike_count;
             }
-        };
-        request.open("PUT", "/chat-messages/like/" + messageId);
-        request.setRequestHeader("Content-Type", "application/json");
-        request.send(JSON.stringify(data));
-    }
+        }
+    };
+    request.open("PUT", "/chat-messages/like/" + messageId);
+    request.setRequestHeader("Content-Type", "application/json");
+    request.send(JSON.stringify(data));
+
+
+
 }
 
-function dislikeMessage(messageId){
+function dislikeMessage(messageId) {
     const request = new XMLHttpRequest();
     const elem = document.getElementById('dislike_count_' + messageId);
 
-    if (elem) {
-        let currentDislikeCount = parseInt(elem.dataset.initialCount); //get current like count val
-        currentDislikeCount++; //deccrement like count
-        const data = {
-            "messageId": messageId,
-            "dislikecount": currentDislikeCount
-        };
-        request.onreadystatechange = function() {
-            if (this.readyState === 4 && this.status === 200) {
-                console.log(this.response);
-                elem.textContent = currentDislikeCount; // update count visually
-
+    const data = {
+        "messageId": messageId,
+    };
+    request.onreadystatechange = function () {
+        if (this.readyState === 4 && this.status === 200) {
+            
+            const like_and_dislike_count_obj = JSON.parse(this.response)
+            console.log(like_and_dislike_count_obj)
+            const likeCountElement = document.getElementById('like_count_' + messageId);
+            const dislikeCountElement = document.getElementById('dislike_count_' + messageId);
+            if (likeCountElement && dislikeCountElement) {
+                likeCountElement.textContent = like_and_dislike_count_obj.like_count;
+                dislikeCountElement.textContent = like_and_dislike_count_obj.dislike_count;
             }
-        };
-        request.open("PUT", "/chat-messages/dislike/" + messageId);
-        request.setRequestHeader("Content-Type", "application/json");
-        request.send(JSON.stringify(data));
-    }
+        }
+    };
+    request.open("PUT", "/chat-messages/dislike/" + messageId);
+    request.setRequestHeader("Content-Type", "application/json");
+    request.send(JSON.stringify(data));
 }
 
 updateChat();
-setInterval(updateChat, 2000);
+setInterval(updateChat, 1000);
 
