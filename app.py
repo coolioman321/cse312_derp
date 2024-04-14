@@ -1,4 +1,5 @@
 from flask import Flask, make_response, render_template, send_from_directory, request, redirect, url_for,jsonify
+from flask_socketio import SocketIO, emit
 from pymongo import MongoClient
 from util.helper import validate_password, escape_html, extract_credentials
 import bcrypt
@@ -21,6 +22,7 @@ file_count = 0
 
 def create_app():
     app = Flask(__name__)
+    socketio = SocketIO(app)
 
     # Serve the home page
     @app.route('/')
@@ -162,53 +164,31 @@ def create_app():
         response.headers["X-Content-Type-Options"] = "nosniff"
         return response
     
-    @app.route('/chat-messages', methods=['POST'])
-    def handle_post_chat_message():
-        # Ensure the request has JSON content
-        if request.is_json:
-            # Parse the JSON data
-            data = request.get_json()
-            message = data.get('message', '')
-            message = escape_html(message) # Escape HTML characters in message
-            if message == '':
-                return jsonify({"success": False, "message": "message is empty"}), 400
-            
-            #initialize the counter
-            document_count = unique_id_counter.count_documents({})
-            if document_count == 0: 
-                unique_id_counter.insert_one({"counter": 1})
-            
-            current_unique_counter = unique_id_counter.find_one({}, {"counter":1})
+    @socketio.on('send_chat')
+    def handle_chat_message(json):
+        username = return_username_of_authenticated_user() or "Guest"
+        message = escape_html(json['message'])
+        xsrf_token = json.get('xsrf_token')
 
-            response_info = {"message": message, "username": "Guest", "id": f"{current_unique_counter['counter']}"}
-            username = return_username_of_authenticated_user()
-            if username != None:
-                username = escape_html(username) # Escape HTML characters in username
-                response_info["username"] = username
-                
-                # Check if user's XSRF token matches the one in the database
-                user_record = users.find_one({"username": username})
-                if user_record:
-                    xsrf_token = user_record.get("xsrf_token", None)
-                    # If token doesn't match, return a 403 error
-                    if xsrf_token != data.get("xsrf_token"):
-                        return jsonify({"success": False, "message": "XSRF token does not match"}), 403
+        # Validate XSRF Token
+        if username != "Guest":
+            user_record = users.find_one({"username": username})
+            if not xsrf_token or xsrf_token != user_record.get("xsrf_token"):
+                emit('chat_response', {'success': False, 'message': 'XSRF token mismatch'})
+                return
 
-            #insert current message into DB
-            chat_collection.insert_one(response_info)
+        # Store the chat message in the database
+        message_id = unique_id_counter.find_one_and_update({}, {'$inc': {'counter': 1}}, return_document=True).get('counter')
+        chat_message = {"username": username, "message": message, "id": message_id}
+        chat_collection.insert_one(chat_message)
+        
+        # Remove the '_id' field as it's not JSON serializable
+        if '_id' in chat_message:
+                chat_message['_id'] = str(chat_message['_id'])
 
-            #increment the counter by 1
-            query = {"counter": {"$exists": True}}
-            new_values = {"$set": {"counter": current_unique_counter['counter']+1}}
-            unique_id_counter.update_one(query, new_values)
-
-            # print(f"message: {message}")  
-
-            # Send a response back to the frontend
-            return jsonify({"success": True, "message": f"id: {current_unique_counter['counter']} message:{message}"}), 200
-        else:
-            return jsonify({"success": False, "message": "Request was not JSON."}), 400
-
+        # Broadcast the chat message to all clients
+        emit('chat_message', chat_message, broadcast=True)
+    
     @app.route('/chat-messages', methods=['GET'])
     def handle_get_chat_messages():
         all_data = chat_collection.find({})
@@ -455,9 +435,9 @@ def create_app():
         # Return to the homepage
         return redirect(url_for('home_page'))
 
-    return app
+    return app, socketio
 
     
 if __name__ == "__main__":
-    app = create_app()
-    app.run(debug=True, host="0.0.0.0", port=8080)
+    app, socketio = create_app()
+    socketio.run(app, debug=True, host="0.0.0.0", port=8080)
