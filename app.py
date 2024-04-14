@@ -296,7 +296,7 @@ def create_app():
                 return jsonify({"error": "Unauthorized"}), 401
 
             return jsonify({"error": "Unauthorized"}), 401
-        
+
     @app.route('/chat-messages/<message_id>', methods=['DELETE'])
     def delete_chat_message(message_id):
         # Check if the auth token is present

@@ -60,3 +60,28 @@ if (confirmPasswordInput) {
         }
     });
 }
+function addDeleteButton(messageId) {
+    const messageDiv = document.createElement('div');
+    messageDiv.id = `message-${messageId}`;
+    messageDiv.className = 'message';
+    messageDiv.innerHTML = `
+        <span>Your message here</span>
+        <button onclick="deleteMessage('${messageId}')">Delete</button>
+    `;
+    document.getElementById('chat-messages').appendChild(messageDiv);
+}
+
+function deleteMessage(messageId) {
+    fetch(`/chat-messages/${messageId}`, {
+        method: 'DELETE',
+        credentials: 'include'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById(`message-${messageId}`).remove();
+        } else {
+            alert('You do not have the permissions to delete this message.');
+        }
+    })
+}
