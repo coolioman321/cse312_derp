@@ -22,7 +22,7 @@ file_count = 0
 
 def create_app():
     app = Flask(__name__)
-    socketio = SocketIO(app)
+    socketio = SocketIO(app, async_mode='eventlet')
 
     # Serve the home page
     @app.route('/')
