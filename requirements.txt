@@ -1,3 +1,5 @@
 pymongo
 bcrypt
 Flask
+Flask-SocketIO
+eventlet
