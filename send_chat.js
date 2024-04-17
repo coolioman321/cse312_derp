@@ -1,6 +1,7 @@
-document.addEventListener('DOMContentLoaded', function() {
-    const socket = io.connect(window.location.origin);
+let socket;
 
+document.addEventListener('DOMContentLoaded', function () {
+    socket = io.connect(window.location.origin);
     socket.on('connect', () => {
         console.log('WebSocket connection established.');
     });
@@ -20,6 +21,25 @@ document.addEventListener('DOMContentLoaded', function() {
             xsrf_token: xsrfToken
         });
     });
+
+    //upload button for images/videos
+    const fileUploadButton = document.getElementById('upload-button'); // Ensure your upload button has this ID
+    if (fileUploadButton) {
+        fileUploadButton.addEventListener('click', function () {
+            const fileInput = document.getElementById('file-upload');
+            if (fileInput.files.length > 0) {
+
+                let file = fileInput.files[0]
+                console.log(`File Name: ${file.name}`);
+                console.log(`File Type: ${file.type}`);
+                console.log(`File Size: ${file.size} bytes`);
+
+                uploadFile(file);
+            } else {
+                console.error('No file selected.');
+            }
+        });
+    }
 
     // Optional - Send chat message when Enter key is pressed
     document.addEventListener("keypress", function (event) {
@@ -78,6 +98,35 @@ function addMessageToChat(message) {
     chatMessages.scrollTop = chatMessages.scrollHeight; // Scroll to the bottom
 }
 
+
+function uploadFile(file) {
+    const CHUNK_SIZE = 1024 * 1024; // 1MB
+    let offset = 0;
+
+    function sendNextChunk() {
+        const reader = new FileReader();
+
+        reader.onload = function (event) {
+            socket.emit('file_upload', { chunk: event.target.result, filename: file.name, finished: offset >= file.size });
+            if (offset < file.size) {
+                sendNextChunk();
+            }
+        };
+
+        reader.onerror = function (event) {
+            console.error("File could not be read: " + event.target.error);
+        };
+
+        const chunk = file.slice(offset, offset + CHUNK_SIZE);
+        reader.readAsArrayBuffer(chunk);
+        offset += CHUNK_SIZE;
+    }
+
+    sendNextChunk();
+}
+
+
+
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -133,7 +182,7 @@ function dislikeMessage(messageId) {
     };
     request.onreadystatechange = function () {
         if (this.readyState === 4 && this.status === 200) {
-            
+
             const like_and_dislike_count_obj = JSON.parse(this.response)
             console.log(like_and_dislike_count_obj)
             const likeCountElement = document.getElementById('like_count_' + messageId);
@@ -148,3 +197,4 @@ function dislikeMessage(messageId) {
     request.setRequestHeader("Content-Type", "application/json");
     request.send(JSON.stringify(data));
 }
+

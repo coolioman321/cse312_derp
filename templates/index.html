@@ -69,18 +69,29 @@
             <button type="button" id="send-btn" class="send_button">Send</button>
 
 
-        <!--Upload file form-->
-        <form action="/upload" method="POST" enctype="multipart/form-data">
+        <!-- Upload file form (HTTP) -->
+        <!-- <form action="/upload" method="POST" enctype="multipart/form-data">
             <label for="file">Upload image or video:</label>
             <input id="file-upload" type="file" name="file">
             <input type="submit" value="Upload">
+        </form> -->
+
+        <!-- upload file (Websocket) -->
+        <form id="upload-form">
+            <input id="file-upload" type="file" name="file">
+            <button id="upload-button" type="button">Upload</button>
+
         </form>
+
+
     </section>
+
 </div>
 <input type="hidden" id="xsrf-token" name="xsrf_token" value="REPLACE_THIS_XSRF_TOKEN">
 
 <script src="../app.js" defer></script>
 <script src="../send_chat.js"></script>
 <script src="https://cdn.socket.io/4.4.1/socket.io.min.js"></script>
+
 </body>
 </html>
