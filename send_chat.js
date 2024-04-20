@@ -137,8 +137,11 @@ function likeMessage(data) {
     console.log(data)
     const messageId = data.id;
     const newLikeCount = data.like_count;
+    const newDislikeCount = data.dislike_count;
     const likeCountElement = document.getElementById(`like_count_${messageId}`);
+    const dislikeCountElement = document.getElementById(`dislike_count_${messageId}`);
     likeCountElement.textContent = newLikeCount;
+    dislikeCountElement.textContent =newDislikeCount;
     }
 
 function dislikeMessage(data) {
@@ -146,37 +149,15 @@ function dislikeMessage(data) {
     console.log(data)
     const messageId = data.id;
     const newDislikeCount = data.dislike_count;
+    const newLikeCount = data.like_count;
+    const likeCountElement = document.getElementById(`like_count_${messageId}`);
     const dislikeCountElement = document.getElementById(`dislike_count_${messageId}`);
     dislikeCountElement.textContent = newDislikeCount;
+    likeCountElement.textContent = newLikeCount;
 
 }
 
 
 
 
-
-
-
-   // const request = new XMLHttpRequest();
-    //const elem = document.getElementById('dislike_count_' + messageId);
-
-    //const data = {
-       // "messageId": messageId,
-    //};
-    //request.onreadystatechange = function () {
-      //  if (this.readyState === 4 && this.status === 200) {
-
-        //    const like_and_dislike_count_obj = JSON.parse(this.response)
-          //  console.log(like_and_dislike_count_obj)
-           // const likeCountElement = document.getElementById('like_count_' + messageId);
-            //const dislikeCountElement = document.getElementById('dislike_count_' + messageId);
-           // if (likeCountElement && dislikeCountElement) {
-            //    likeCountElement.textContent = like_and_dislike_count_obj.like_count;
-             //   dislikeCountElement.textContent = like_and_dislike_count_obj.dislike_count;
-            //}
-       // }
-   // };
-   // request.open("PUT", "/chat-messages/dislike/" + messageId);
-    //request.setRequestHeader("Content-Type", "application/json");
-    ///request.send(JSON.stringify(data));
 
