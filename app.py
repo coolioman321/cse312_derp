@@ -177,6 +177,11 @@ def create_app():
                 emit('chat_response', {'success': False, 'message': 'XSRF token mismatch'})
                 return
 
+        # Initialize the counter
+        document_count = unique_id_counter.count_documents({})
+        if document_count == 0:
+            unique_id_counter.insert_one({"counter": 1})
+
         # Store the chat message in the database
         message_id = unique_id_counter.find_one_and_update({}, {'$inc': {'counter': 1}}, return_document=True).get('counter')
         print(type(message_id), flush = True)
