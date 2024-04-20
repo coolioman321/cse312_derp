@@ -184,7 +184,7 @@ def create_app():
 
         # Store the chat message in the database
         message_id = unique_id_counter.find_one_and_update({}, {'$inc': {'counter': 1}}, return_document=True).get('counter')
-        chat_message = {"username": username, "message": message, "id": message_id}
+        chat_message = {"username": username, "message": message, "id": int(message_id)}
         chat_collection.insert_one(chat_message)
         
         # Remove the '_id' field as it's not JSON serializable
@@ -340,38 +340,50 @@ def create_app():
                 return jsonify({"error": "Unauthorized"}), 401
 
             return jsonify({"error": "Unauthorized"}), 401
-        
-    @app.route('/chat-messages/<message_id>', methods=['DELETE'])
-    def delete_chat_message(message_id):
-        # Check if the auth token is present
-        request_auth_token = request.cookies.get('auth_token')
-        if request_auth_token is None:
-            return jsonify({"error": "Unauthorized - No auth token provided"}), 401
 
-        # Verify the auth token
-        hash_object = hashlib.sha256(request_auth_token.encode())
+    @socketio.on('delete_message')
+    def handle_delete_message(data):
+        message_id = data['message_id']
+        try:
+            message_id = int(message_id)
+        except ValueError:
+            emit('delete_response', {'success': False, 'error': 'Invalid message ID format'})
+            return
+        print(f"Attempting to delete message with ID: {message_id}")
+        auth_token = request.cookies.get('auth_token')
+        print(f"Auth token received: {auth_token}")
+
+        # Check if authentication token exists
+        if not auth_token:
+            emit('delete_response', {'success': False, 'error': 'Unauthorized - Guest cannot delete messages'})
+            return
+
+        # Validate the token and retrieve the username
+        hash_object = hashlib.sha256(auth_token.encode())
         hashed_request_authToken = hash_object.hexdigest()
-        username_authToken = authToken.find_one({"auth_token": hashed_request_authToken})
+        user_auth_token_record = authToken.find_one({"auth_token": hashed_request_authToken})
 
-        if username_authToken is None:
-            return jsonify({"error": "Unauthorized - Invalid auth token"}), 401
+        if not user_auth_token_record:
+            emit('delete_response', {'success': False, 'error': 'Unauthorized - Invalid auth token'})
+            return
 
-        # Check if the user is authorized to delete the message
-        # (assuming the 'username' field in the message document indicates the message owner)
-        message = chat_collection.find_one({"id": message_id})
-        if message is None:
-            return jsonify({"error": "Message not found"}), 404
+        # Ensure the message to be deleted belongs to the logged-in user
+        message_record = chat_collection.find_one({'id': message_id})
+        print(f"Message record found: {message_record}")
+        if not message_record:
+            emit('delete_response', {'success': False, 'error': 'Message not found'})
+            return
 
-        if username_authToken['username'] != message.get('username', ''):
-            return jsonify({"error": "Unauthorized - User cannot delete this message"}), 403
+        if message_record['username'] != user_auth_token_record['username']:
+            emit('delete_response', {'success': False, 'error': 'Unauthorized - Cannot delete others\' messages'})
+            return
 
-        # Proceed with message deletion
-        result = chat_collection.delete_one({"id": message_id})
-
+        # Perform the deletion operation
+        result = chat_collection.delete_one({'id': message_id})
         if result.deleted_count > 0:
-            return jsonify({"success": True, "message": "Message deleted successfully."}), 200
+            emit('delete_response', {'success': True, 'message': 'Message deleted successfully.'})
         else:
-            return jsonify({"error": "Message not found or could not be deleted"}), 404
+            emit('delete_response', {'success': False, 'error': 'Message could not be deleted'})
 
     @app.route('/upload', methods=['POST'])
     def upload_file():

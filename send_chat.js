@@ -8,7 +8,14 @@ document.addEventListener('DOMContentLoaded', function() {
     socket.on('chat_message', (data) => {
         addMessageToChat(data);
     });
-
+    socket.on('delete_response', function(data) {
+        if (data.success) {
+            alert('Message deleted successfully.');
+            window.location.reload(); // Refresh the page to reflect changes
+        } else {
+            alert(data.error);
+        }
+    });
     // Send button for chat
     document.getElementById('send-btn').addEventListener('click', () => {
         const message = document.getElementById("chat-text-box").value;
@@ -34,6 +41,15 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
     });
+    document.getElementById('chat-messages').addEventListener('click', (event) => {
+        if (event.target.classList.contains('delete-button')) {
+            const messageId = event.target.getAttribute('data-message-id');
+            deleteMessage(messageId);
+        }
+    });
+    window.deleteMessage = function(messageId) {
+        socket.emit('delete_message', {message_id: messageId});
+    };
 });
 
 function welcome() {
@@ -60,7 +76,7 @@ function chatMessageHTML(message) {
     const { username, message: msg, id, like_count = 0, dislike_count = 0 } = message;
     return `
         <div id="message_${id}">
-            <button onclick='deleteMessage("${id}")'>X</button>
+            <button class='delete-button' data-message-id="${id}">X</button>
             <button class='like-button' onclick='likeMessage("${id}")'>&#x1F44D;</button>
             <span id='like_count_${id}'>${like_count}</span>
             <button class='dislike-button' onclick='dislikeMessage("${id}")'>&#x1F44E;</button>
@@ -86,16 +102,6 @@ function addMessageToChat(message) {
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-function deleteMessage(messageId) {
-    const request = new XMLHttpRequest();
-    request.onreadystatechange = function () {
-        if (this.readyState === 4 && this.status === 200) {
-            console.log(this.response);
-        }
-    }
-    request.open("DELETE", "/chat-messages/" + messageId);
-    request.send();
-}
 
 function likeMessage(messageId) {
 
