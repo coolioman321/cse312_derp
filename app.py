@@ -414,12 +414,15 @@ def create_app():
                 return jsonify({"error": "Unauthorized"}), 401
 
             return jsonify({"error": "Unauthorized"}), 401
-        
-    @app.route('/chat-messages/<message_id>', methods=['DELETE'])
-    def delete_chat_message(message_id):
+
+    @socketio.on('delete')
+    def delete_chat_message(data):
+        print("in the delete bend", flush = True)
+        message_id = data['id']
         # Check if the auth token is present
         request_auth_token = request.cookies.get('auth_token')
         if request_auth_token is None:
+            print('1', flush= True)
             return jsonify({"error": "Unauthorized - No auth token provided"}), 401
 
         # Verify the auth token
@@ -428,21 +431,31 @@ def create_app():
         username_authToken = authToken.find_one({"auth_token": hashed_request_authToken})
 
         if username_authToken is None:
+            print('2', flush= True)
             return jsonify({"error": "Unauthorized - Invalid auth token"}), 401
 
         # Check if the user is authorized to delete the message
         # (assuming the 'username' field in the message document indicates the message owner)
-        message = chat_collection.find_one({"id": message_id})
+        message = chat_collection.find_one({"id": int(message_id)})
         if message is None:
+            print('3', flush= True)
             return jsonify({"error": "Message not found"}), 404
 
         if username_authToken['username'] != message.get('username', ''):
             return jsonify({"error": "Unauthorized - User cannot delete this message"}), 403
 
         # Proceed with message deletion
-        result = chat_collection.delete_one({"id": message_id})
+        result = chat_collection.delete_one({"id": int(message_id)})
 
         if result.deleted_count > 0:
+            print("emitting", flush = True)
+            print(message_id, flush = True)
+            print(type(message_id), flush = True)
+            emit('delete_updated', {
+
+                'id': message_id,
+
+            }, broadcast=True)
             return jsonify({"success": True, "message": "Message deleted successfully."}), 200
         else:
             return jsonify({"error": "Message not found or could not be deleted"}), 404
