@@ -7,8 +7,8 @@ services:
       - '443:443'
   mongo:
     image: mongo:4.2.5
-    ports:
-      - '27017:27017'
+    expose: # Use 'expose' instead of 'ports' to add security
+    - '27017'
   app:
     build: .
     volumes:
