@@ -22,7 +22,9 @@ file_count = 0
 
 def create_app():
     app = Flask(__name__)
+    app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # 100 MB limit
     socketio = SocketIO(app, async_mode='eventlet')
+    
 
     # Serve the home page
     @app.route('/')
