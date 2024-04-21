@@ -12,8 +12,6 @@ services:
 
   mongo:
     image: mongo:4.2.5
-    expose:
-      - '27017'  # Makes MongoDB available only to linked services
 
   app:
     build: .
