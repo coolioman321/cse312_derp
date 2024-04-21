@@ -64,6 +64,14 @@ def create_app():
         response.headers["X-Content-Type-Options"] = "nosniff"
         return response
 
+    @app.route('/favicon.ico')
+    def host_favicon():
+        print('serving favicon', flush = True)
+        print("in favicon", flush = True)
+        response = send_from_directory('.', 'images/favicon.ico', mimetype='image/x-icon')
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        return response
+
     # Serve image files from the 'images' directory
     @app.route('/images/<filename>')
     def host_image(filename):
