@@ -1,6 +1,7 @@
 let socket;
 
 document.addEventListener('DOMContentLoaded', function () {
+
     socket = io.connect(window.location.origin);
     socket.on('connect', () => {
         console.log('WebSocket connection established.');

@@ -23,7 +23,8 @@ file_storage = {}
 
 def create_app():
     app = Flask(__name__)
-    socketio = SocketIO(app, async_mode='eventlet')
+    # app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024
+    socketio = SocketIO(app, async_mode='eventlet', max_http_buffer_size=1e8)
 
     # Serve the home page
     @app.route('/')
