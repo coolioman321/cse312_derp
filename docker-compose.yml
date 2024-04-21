@@ -5,15 +5,22 @@ services:
     ports:
       - '80:80'
       - '443:443'
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt:ro  # Ensuring SSL certificates are accessible
+    restart: unless-stopped
+
   mongo:
     image: mongo:4.2.5
-    expose: # Use 'expose' instead of 'ports' to add security
-    - '27017'
+    expose:
+      - '27017'  # Makes MongoDB available only to linked services
+
   app:
     build: .
     volumes:
-      - .:/root
+      - .:/root 
     environment:
       WAIT_HOSTS: mongo:27017
     ports:
       - '8080:8080'
+    depends_on:
+      - mongo
