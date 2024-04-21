@@ -1,5 +1,7 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const socket = io.connect(window.location.origin);
+    const isSecure = window.location.protocol === 'https:';
+    const socket = io.connect(window.location.origin, { secure: isSecure, reconnect: true, rejectUnauthorized: false });
+    //const socket = io.connect(window.location.origin);
 
     socket.on('connect', () => {
         console.log('WebSocket connection established.');

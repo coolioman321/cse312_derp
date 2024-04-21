@@ -147,6 +147,8 @@ def create_app():
                 authToken.find_one_and_delete({"username": username})
                 authToken.insert_one({"username": username, "auth_token": hashed_auth_token})
                 response.headers["X-Content-Type-Options"] = "nosniff"
+                # Secure the cookie
+                response.headers["Set-Cookie"] = "auth_token=" + generated_auth_token + "; Secure"
                 return response
 
         return redirect(url_for('home_page'))
