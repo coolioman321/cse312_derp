@@ -67,7 +67,24 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-
+     //upload button for images/videos
+     const fileUploadButton = document.getElementById('upload-button'); // Ensure your upload button has this ID
+     if (fileUploadButton) {
+         fileUploadButton.addEventListener('click', function () {
+             const fileInput = document.getElementById('file-upload');
+             if (fileInput.files.length > 0) {
+ 
+                 let file = fileInput.files[0]
+                 console.log(`File Name: ${file.name}`);
+                 console.log(`File Type: ${file.type}`);
+                 console.log(`File Size: ${file.size} bytes`);
+ 
+                 uploadFile(file, socket);
+             } else {
+                 console.error('No file selected.');
+             }
+         });
+     }
 
 
     // Optional - Send chat message when Enter key is pressed
@@ -181,6 +198,32 @@ function dislikeMessage(data) {
     dislikeCountElement.textContent = newDislikeCount;
     likeCountElement.textContent = newLikeCount;
 
+}
+
+function uploadFile(file, socket) {
+    const CHUNK_SIZE = 1024 * 1024; // 1MB
+    let offset = 0;
+
+    function sendNextChunk() {
+        const reader = new FileReader();
+
+        reader.onload = function (event) {
+            socket.emit('file_upload', { chunk: event.target.result, filename: file.name, finished: offset >= file.size });
+            if (offset < file.size) {
+                sendNextChunk();
+            }
+        };
+
+        reader.onerror = function (event) {
+            console.error("File could not be read: " + event.target.error);
+        };
+
+        const chunk = file.slice(offset, offset + CHUNK_SIZE);
+        reader.readAsArrayBuffer(chunk);
+        offset += CHUNK_SIZE;
+    }
+
+    sendNextChunk();
 }
 
 

@@ -19,11 +19,12 @@ liked_messages = db['liked_messages']
 disliked_messages = db['disliked_messages']
 
 file_count = 0
+file_storage = {}
 
 def create_app():
     app = Flask(__name__)
     app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # 100 MB limit
-    socketio = SocketIO(app, async_mode='eventlet')
+    socketio = SocketIO(app, async_mode='eventlet',  max_http_buffer_size=1e8)
     
 
     # Serve the home page
@@ -472,73 +473,104 @@ def create_app():
         else:
             return jsonify({"error": "Message not found or could not be deleted"}), 404
 
-    @app.route('/upload', methods=['POST'])
-    def upload_file():
-        # Check if the POST request has the file part
-        if 'file' not in request.files:
-            return redirect(url_for('home_page'))
-        file = request.files['file']
-        
-        # If the user does not select a file, the browser submits an empty part without a filename.
-        if file.filename == '':
-            return redirect(url_for('home_page'))
-        
-        # Read file signature from first 16 bytes
-        file_signature = file.read(16)
-        
-        # Check for jpg signature
-        if file_signature[:2] == b'\xFF\xD8':
-            file_extension = 'jpg'
-        # Check for png signature
-        elif file_signature[:8] == b'\x89\x50\x4E\x47\x0D\x0A\x1A\x0A':
-            file_extension = 'png'
-        # Check for gif signature
-        elif file_signature[:6] in [b'GIF87a', b'GIF89a']:
-            file_extension = 'gif'
-        # Check for mp4 signature
-        elif b'ftypisom' in file_signature or b'ftypmp42' in file_signature or b'ftypMSNV' in file_signature:
-            file_extension = 'mp4'
-        else:
-            return redirect(url_for('home_page'))
-        
-        # Generate unique filename with its extension
-        global file_count
-        file_count += 1
-        filename = f'file_{file_count}.{file_extension}'
-        filename = filename.replace('/', '') # Prevent directory traversal
-        filepath = os.path.join('images', filename)
-        
-        # Save the file to disk
-        with open(filepath, 'wb') as f:
-            f.write(file_signature)
-            f.write(file.read())
+    @socketio.on('file_upload')
+    def handle_upload_files(json):
 
-        # Create img tag for jpg, png, and gif files
-        if file_extension in ['jpg', 'png', 'gif']:
-            msg = f'<img src="/images/{filename}" alt="Uploaded image" style="max-width: 100%; max-height: 100%;">'
-        # Create video tag for mp4 files
-        elif file_extension == 'mp4':
-            msg = f'<video controls autoplay muted style="max-width: 100%; max-height: 100%;"><source src="/images/{filename}" type="video/mp4">Your browser does not support the video tag.</video>'
+        print(f"\n\nbinary_data: {json}\n\n", flush = True)
 
-        # Generate unique ID for the chat message
-        document_count = unique_id_counter.count_documents({})
-        if document_count == 0: 
-            unique_id_counter.insert_one({"counter": 1})
-        current_unique_counter = unique_id_counter.find_one({}, {"counter":1})
+        #{chunk: event.target.result, filename: file.name, finished: offset >= file.size}
+
+        bin_data = json['chunk']
+        user_named_filename = json['filename'].replace('/', '')
+        status = json['finished']
+
+        global file_storage
+        if user_named_filename not in file_storage:
+            file_storage[user_named_filename] = bytearray()
+
+        file_storage[user_named_filename] += bin_data
+
+
+        if status == True:
+            username = return_username_of_authenticated_user() or "Guest"  # Ensure this function is adapted for WebSocket context
+            complete_file_process(username, user_named_filename)
+            return 
+
+    def complete_file_process(username, user_named_filename):
+
+        global file_storage
+        data = file_storage[user_named_filename] 
+
+        sig_check = data[:17]
+        print(f'sig: {sig_check[:17]}', flush=True)
+        file_extension = ''
+        if len(sig_check) > 16:
+             # Check for jpg signature
+            if sig_check[:2] == b'\xFF\xD8':
+                file_extension = 'jpg'
+            # Check for png signature
+            elif sig_check[:8] == b'\x89\x50\x4E\x47\x0D\x0A\x1A\x0A':
+                file_extension = 'png'
+            # Check for gif signature
+            elif sig_check[:6] in [b'GIF87a', b'GIF89a']:
+                file_extension = 'gif'
+            # Check for mp4 signature
+            elif b'ftypisom' in sig_check or b'ftypmp42' in sig_check or b'ftypMSNV' in sig_check:
+                file_extension = 'mp4'
+                print(f'\n\nMP4 is uploaded\n\n', flush = True)
+            elif b'\x00\x00\x00\x14\x66\x74\x79\x70\x71\x74\x20\x20' in sig_check:
+                file_extension = 'mov'
+                print(f'\n\nMOV is uploaded\n\n', flush = True)
         
-        # If auth_token cookie exists, set username of the user with that token
-        username = return_username_of_authenticated_user()
-        if username is not None:
-            username = escape_html(username)
-        else:
-            username = 'Guest'
+        #skip everything else if file extension 
+        if file_extension != '':
+
+            global file_count
+            file_count += 1
+            filename = f'file_{file_count}.{file_extension}'
+            filename = filename.replace('/', '') # Prevent directory traversal
             
-        # Insert the chat message into the database
-        chat_collection.insert_one({"message": msg, "username": username, "id": f"{current_unique_counter['counter']}"})
-        
-        # Return to the homepage
-        return redirect(url_for('home_page'))
+            file_path = os.path.join('images', filename)  # Ensure directory exists and is writable
 
+            with open(file_path, 'wb') as f:
+                f.write(data)
+
+            # Construct the appropriate media tag based on the file type
+            media_tag = generate_media_tag(filename, file_path)
+            
+            # Insert the message into the database (chat collection or similar)
+            insert_media_message(username, media_tag)
+
+            # Notify the user (optional)
+            emit('upload_complete', {'message': 'Upload complete', 'file_path': file_path})
+
+        else:
+            print(f'\n\n\nfile_extension is empty \n\n\n', flush= True)
+
+    def generate_media_tag(filename, filepath):
+        # Determine the file extension
+        if filename.endswith('.jpg') or filename.endswith('.png') or filename.endswith('.gif'):
+            return f'<img src="/images/{filename}" alt="Uploaded image" style="max-width: 100%; max-height: 100%;">'
+        elif filename.endswith('.mp4'):
+            return f'<video controls autoplay muted style="max-width: 100%; max-height: 100%;"><source src="/images/{filename}" type="video/mp4">Your browser does not support the video tag.</video>'
+        return ""
+
+    def insert_media_message(username, media_tag):
+        # Assuming a function to insert messages into a database or similar
+        document_count = unique_id_counter.count_documents({})
+        if document_count == 0:
+            unique_id_counter.insert_one({"counter": 1})
+        current_unique_counter = unique_id_counter.find_one_and_update({}, {'$inc': {'counter': 1}}, return_document=True)
+
+        chat_message = {"message": media_tag, "username": username, "id": str(current_unique_counter['counter'])}
+
+        chat_collection.insert_one(chat_message)
+        
+        del chat_message['_id']
+
+        # Broadcast the chat message to all clients
+        emit('chat_message', chat_message, broadcast=True)
+   
     return app, socketio
 
     
