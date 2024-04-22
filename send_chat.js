@@ -24,7 +24,10 @@ document.addEventListener('DOMContentLoaded', function() {
         deleteMessage(data);
     });
 
-    socket.on('', function(data){})
+    socket.on('cannot_delete_other_msgs', function(data){
+
+        alert(data.error)
+    })
 
 
     // Send button for chat
