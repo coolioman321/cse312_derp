@@ -443,15 +443,18 @@ def create_app():
         hashed_request_authToken = hash_object.hexdigest()
         username_authToken = authToken.find_one({"auth_token": hashed_request_authToken})
 
+        # Check if the user is authorized to delete the message
         if username_authToken is None:
             print('2', flush= True)
             return jsonify({"error": "Unauthorized - Invalid auth token"}), 401
 
-        # Check if the user is authorized to delete the message
         # (assuming the 'username' field in the message document indicates the message owner)
+
         message = chat_collection.find_one({"id": int(message_id)})
+        print(f'message: {message}', flush= True)
+
         if message is None:
-            print('3', flush= True)
+            print(f'3 id = {message_id}', flush= True)
             return jsonify({"error": "Message not found"}), 404
 
         if username_authToken['username'] != message.get('username', ''):
@@ -562,7 +565,7 @@ def create_app():
             unique_id_counter.insert_one({"counter": 1})
         current_unique_counter = unique_id_counter.find_one_and_update({}, {'$inc': {'counter': 1}}, return_document=True)
 
-        chat_message = {"message": media_tag, "username": username, "id": str(current_unique_counter['counter'])}
+        chat_message = {"message": media_tag, "username": username, "id": current_unique_counter['counter']}
 
         chat_collection.insert_one(chat_message)
         
