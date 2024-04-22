@@ -451,14 +451,13 @@ def create_app():
         # (assuming the 'username' field in the message document indicates the message owner)
 
         message = chat_collection.find_one({"id": int(message_id)})
-        print(f'message: {message}', flush= True)
 
         if message is None:
             print(f'3 id = {message_id}', flush= True)
             return jsonify({"error": "Message not found"}), 404
 
         if username_authToken['username'] != message.get('username', ''):
-            return jsonify({"error": "Unauthorized - User cannot delete this message"}), 403
+            return emit('cannot_delete_other_msgs', {'error': "User cannot delete other's messages"})
 
         # Proceed with message deletion
         result = chat_collection.delete_one({"id": int(message_id)})
@@ -554,7 +553,7 @@ def create_app():
         # Determine the file extension
         if filename.endswith('.jpg') or filename.endswith('.png') or filename.endswith('.gif'):
             return f'<img src="/images/{filename}" alt="Uploaded image" style="max-width: 100%; max-height: 100%;">'
-        elif filename.endswith('.mp4'):
+        elif filename.endswith('.mp4') or filename.endswith('.mov'):
             return f'<video controls autoplay muted style="max-width: 100%; max-height: 100%;"><source src="/images/{filename}" type="video/mp4">Your browser does not support the video tag.</video>'
         return ""
 

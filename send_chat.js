@@ -24,6 +24,8 @@ document.addEventListener('DOMContentLoaded', function() {
         deleteMessage(data);
     });
 
+    socket.on('', function(data){})
+
 
     // Send button for chat
     document.getElementById('send-btn').addEventListener('click', () => {
