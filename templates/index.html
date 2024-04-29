@@ -1,94 +1,102 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Derp</title>
-    <link rel="stylesheet" type="text/css" href="/style.css"/>
+    <link rel="stylesheet" type="text/css" href="/style.css" />
     <link rel="shortcut icon" type="image/x-icon" href="/images/favicon.ico">
 </head>
+
 <body>
 
-<header>
-    <h1>WELCOME</h1>
-</header>
+    <header>
+        <h1>WELCOME</h1>
+    </header>
 
-<body onload="welcome();">
+    <body onload="welcome();">
+        <div class="page-layout">
+            <!-- this is the log in - log-out forms -->
+            <div id="mySidenav" class="sidenav">
+                <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+                <div class="page-content">
+                    <h2>Guest</h2>
+                    <div class="image_div">
+                        <img src="/images/download.jpg" alt="ME rn" class="my_image" />
+                    </div>
 
-<div class="page-layout">
+                    {% if not user_logged_in %}
+                    <!-- Registration Form -->
+                    <form id="registrationForm" action="/register" method="POST">
+                        <h2>Register</h2>
+                        <div>
+                            <label for="username">Username:</label>
+                            <input type="text" id="username" name="username" required>
+                        </div>
+                        <div>
+                            <label for="password">Password:</label>
+                            <input type="password" id="password" name="password" required minlength="8">
+                        </div>
+                        <div>
+                            <label for="confirmPassword">Confirm Password:</label>
+                            <input type="password" id="confirmPassword" name="confirmPassword" required>
+                        </div>
+                        <button type="submit">Register</button>
+                    </form>
 
-    <div class="page-content">
-        <h2>Guest</h2>
-        <div class="image_div">
-            <img src="/images/download.jpg" alt="ME rn" class="my_image" />
-        </div>
-
-        {% if not user_logged_in %}
-            <!-- Registration Form -->
-            <form id="registrationForm" action="/register" method="POST">
-                <h2>Register</h2>
-                <div>
-                    <label for="username">Username:</label>
-                    <input type="text" id="username" name="username" required>
+                    <!-- Login Form -->
+                    <form id="loginForm" action="/login" method="POST">
+                        <h2>Login</h2>
+                        <div>
+                            <label for="username">Username:</label>
+                            <input type="text" id="login_username" name="login_username" required>
+                        </div>
+                        <div>
+                            <label for="password">Password:</label>
+                            <input type="password" id="login_password" name="login_password" required minlength="8">
+                        </div>
+                        <button type="submit">Login</button>
+                    </form>
+                    {% else %}
+                    <form action="/log-out" id='log_out' method="post">
+                        <input type="submit" value="Log out">
+                    </form>
+                    {% endif %}
                 </div>
-                <div>
-                    <label for="password">Password:</label>
-                    <input type="password" id="password" name="password" required minlength="8">
-                </div>
-                <div>
-                    <label for="confirmPassword">Confirm Password:</label>
-                    <input type="password" id="confirmPassword" name="confirmPassword" required>
-                </div>
-                <button type="submit">Register</button>
-            </form>
+            </div>
 
-            <!-- Login Form -->
-            <form id="loginForm" action="/login" method="POST">
-                <h2>Login</h2>
-                <div>
-                    <label for="username">Username:</label>
-                    <input type="text" id="login_username" name="login_username" required>
-                </div>
-                <div>
-                    <label for="password">Password:</label>
-                    <input type="password" id="login_password" name="login_password" required minlength="8">
-                </div>
-                <button type="submit">Login</button>
-            </form>
-        {% else %}
-            <form action="/log-out" id='log_out' method="post">
-                <input type="submit" value="Log out">
-            </form>
-            {% endif %}
-        </div>
+            <span style="font-size:30px;cursor:pointer" onclick="openNav()">&#9776;</span>
 
-    <!-- Chat Section -->
-    <section id="chatSection">
-        <h2>Chat</h2>
-        <div id="chat-messages" class="chat-messages">
-            <!-- Messages will be loaded here -->
-        </div>
-            <input type="text" id="chat-text-box" name="message" autocomplete="off" placeholder="Type your message here...">
-            <button type="button" id="send-btn" class="send_button">Send</button>
+            <!-- Chat Section -->
+            <section id="chatSection">
+                <h2>Chat</h2>
+                <div id="chat-messages" class="chat-messages">
+                    <!-- Messages will be loaded here -->
+                </div>
+                <input type="text" id="chat-text-box" name="message" autocomplete="off"
+                    placeholder="Type your message here...">
+                <button type="button" id="send-btn" class="send_button">Send</button>
 
 
-        <!--Upload file form (HTTP)-->
-        <!-- <form action="/upload" method="POST" enctype="multipart/form-data">
+                <!--Upload file form (HTTP)-->
+                <!-- <form action="/upload" method="POST" enctype="multipart/form-data">
             <label for="file">Upload image or video:</label>
             <input id="file-upload" type="file" name="file">
             <input type="submit" value="Upload">
         </form> -->
 
-         <!-- upload file (Websocket) -->
-         <form id="upload-form">
-            <input id="file-upload" type="file" name="file">
-            <button id="upload-button" type="button">Upload</button>
-        </form>
-        
-    </section>
-</div>
-<input type="hidden" id="xsrf-token" name="xsrf_token" value="REPLACE_THIS_XSRF_TOKEN">
+                <!-- upload file (Websocket) -->
+                <form id="upload-form">
+                    <input id="file-upload" type="file" name="file">
+                    <button id="upload-button" type="button">Upload</button>
+                </form>
 
-<script src="../app.js" defer></script>
-<script src="../send_chat.js"></script>
-<script src="https://cdn.socket.io/4.4.1/socket.io.min.js"></script>
-</body>
+            </section>
+        </div>
+        <input type="hidden" id="xsrf-token" name="xsrf_token" value="REPLACE_THIS_XSRF_TOKEN">
+
+        <script src="../app.js" defer></script>
+        <script src="../send_chat.js"></script>
+        <script src="https://cdn.socket.io/4.4.1/socket.io.min.js"></script>
+    </body>
+
 </html>

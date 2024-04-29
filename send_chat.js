@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     const isSecure = window.location.protocol === 'https:';
     const socket = io.connect(window.location.origin, { secure: isSecure, reconnect: true, rejectUnauthorized: false });
     //const socket = io.connect(window.location.origin);
@@ -20,11 +20,11 @@ document.addEventListener('DOMContentLoaded', function() {
         dislikeMessage(data);
     });
 
-    socket.on('delete_updated', function (data){
+    socket.on('delete_updated', function (data) {
         deleteMessage(data);
     });
 
-    socket.on('cannot_delete_other_msgs', function(data){
+    socket.on('cannot_delete_other_msgs', function (data) {
 
         alert(data.error)
     })
@@ -72,24 +72,24 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-     //upload button for images/videos
-     const fileUploadButton = document.getElementById('upload-button'); // Ensure your upload button has this ID
-     if (fileUploadButton) {
-         fileUploadButton.addEventListener('click', function () {
-             const fileInput = document.getElementById('file-upload');
-             if (fileInput.files.length > 0) {
- 
-                 let file = fileInput.files[0]
-                 console.log(`File Name: ${file.name}`);
-                 console.log(`File Type: ${file.type}`);
-                 console.log(`File Size: ${file.size} bytes`);
- 
-                 uploadFile(file, socket);
-             } else {
-                 console.error('No file selected.');
-             }
-         });
-     }
+    //upload button for images/videos
+    const fileUploadButton = document.getElementById('upload-button'); // Ensure your upload button has this ID
+    if (fileUploadButton) {
+        fileUploadButton.addEventListener('click', function () {
+            const fileInput = document.getElementById('file-upload');
+            if (fileInput.files.length > 0) {
+
+                let file = fileInput.files[0]
+                console.log(`File Name: ${file.name}`);
+                console.log(`File Type: ${file.type}`);
+                console.log(`File Size: ${file.size} bytes`);
+
+                uploadFile(file, socket);
+            } else {
+                console.error('No file selected.');
+            }
+        });
+    }
 
 
     // Optional - Send chat message when Enter key is pressed
@@ -168,12 +168,13 @@ function deleteMessage(data) {
         console.log('deleting');
         messageElement.remove(); //remove
     } else {
-        console.log(`Message not found.`);}
+        console.log(`Message not found.`);
+    }
     //const request = new XMLHttpRequest();
     //request.onreadystatechange = function () {
-        //if (this.readyState === 4 && this.status === 200) {
-            //console.log(this.response);
-        //}
+    //if (this.readyState === 4 && this.status === 200) {
+    //console.log(this.response);
+    //}
     //}
     //request.open("DELETE", "/chat-messages/" + messageId);
     //request.send();
@@ -189,8 +190,8 @@ function likeMessage(data) {
     const likeCountElement = document.getElementById(`like_count_${messageId}`);
     const dislikeCountElement = document.getElementById(`dislike_count_${messageId}`);
     likeCountElement.textContent = newLikeCount;
-    dislikeCountElement.textContent =newDislikeCount;
-    }
+    dislikeCountElement.textContent = newDislikeCount;
+}
 
 function dislikeMessage(data) {
 
@@ -229,6 +230,16 @@ function uploadFile(file, socket) {
     }
 
     sendNextChunk();
+}
+
+/* Set the width of the side navigation to 250px */
+function openNav() {
+    document.getElementById("mySidenav").style.width = "250px";
+}
+
+/* Set the width of the side navigation to 0 */
+function closeNav() {
+    document.getElementById("mySidenav").style.width = "0";
 }
 
 
