@@ -8,6 +8,9 @@ import json
 from util.auth_token_functions import check_user_auth, generate_auth_token, return_username_of_authenticated_user
 import secrets
 import os
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+import time
 
 mongo_client = MongoClient('mongo')
 db = mongo_client['derp']
@@ -21,11 +24,21 @@ disliked_messages = db['disliked_messages']
 file_count = 0
 file_storage = {}
 
+banned_ips = {}
+request_counts = {}
+
 def create_app():
     app = Flask(__name__)
     app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # 100 MB limit
     socketio = SocketIO(app, async_mode='eventlet',  max_http_buffer_size=1e8)
     
+    limiter = Limiter(
+        key_func=get_remote_address,
+        default_limits=["15 per 10 seconds"],
+        storage_uri="memory://",
+        strategy="moving-window"
+    )
+    limiter.init_app(app)
 
     # Serve the home page
     @app.route('/')
@@ -572,9 +585,54 @@ def create_app():
 
         # Broadcast the chat message to all clients
         emit('chat_message', chat_message, broadcast=True)
-   
+    
+    @app.before_request
+    def check_ban_status():
+        ip = get_remote_address()
+        current_time = time.time()
+
+        if ip in banned_ips:
+            ban_time = banned_ips[ip]
+            if current_time < ban_time:
+                time_left = int(ban_time - current_time)
+                # Attach a flag to the request context to indicate this was a ban hit
+                request.is_banned = True  
+                return make_response(
+                    jsonify(error="Banned", message=f"Access temporarily blocked. Please try again in {time_left} seconds."), 429
+                )
+            else:
+                # Ban time has expired, remove the IP from the banned list
+                del banned_ips[ip]
+
+        # Initialize or reset the request count for IP
+        if ip not in request_counts or current_time > request_counts[ip]['reset_time']:
+            request_counts[ip] = {'count': 1, 'reset_time': current_time + 10}  # Reset every 10 seconds
+        else:
+            request_counts[ip]['count'] += 1
+
+        remaining = max(0, 50 - request_counts[ip]['count'])
+        print(f"IP {ip} has made {request_counts[ip]['count']} requests. {remaining} requests left before limit.", flush=True)
+
+    @app.after_request
+    def after_request_func(response):
+        ip = get_remote_address()
+        # Only reset count and set ban if this wasn't already a ban response
+        if response.status_code == 429 and not getattr(request, 'is_banned', False):
+            # Reset count and set ban on rate limit
+            banned_ips[ip] = time.time() + 30
+            request_counts[ip]['count'] = 0
+            print(f"IP {ip} banned for exceeding rate limits. No more requests allowed for 30 seconds.", flush=True)
+        return response
+
+    @app.errorhandler(429)
+    def ratelimit_handler(e):
+        return make_response(
+            jsonify(error="Banned", message="Access temporarily blocked. Please try again in 30 seconds."), 429
+        )
+
     return app, socketio
 
+    
     
 if __name__ == "__main__":
     app, socketio = create_app()
