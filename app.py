@@ -10,6 +10,7 @@ import secrets
 import os
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+from werkzeug.middleware.proxy_fix import ProxyFix
 import time
 
 mongo_client = MongoClient('mongo')
@@ -27,19 +28,14 @@ file_storage = {}
 banned_ips = {}
 request_counts = {}
 
-def get_client_ip():
-    # Attempt to get the header the proxy would set (if in production)
-    if "X-Forwarded-For" in request.headers:
-        return request.headers["X-Forwarded-For"].split(',')[0]  # Consider the first IP in the list
-    return request.remote_addr
-
 def create_app():
     app = Flask(__name__)
     app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # 100 MB limit
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_host=1, x_port=1, x_prefix=1)
     socketio = SocketIO(app, async_mode='eventlet',  max_http_buffer_size=1e8)
     
     limiter = Limiter(
-        key_func=get_client_ip,
+        key_func=get_remote_address,
         default_limits=["15 per 10 seconds"],
         storage_uri="memory://",
         strategy="moving-window"
