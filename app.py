@@ -27,13 +27,19 @@ file_storage = {}
 banned_ips = {}
 request_counts = {}
 
+def get_client_ip():
+    # Attempt to get the header the proxy would set (if in production)
+    if "X-Forwarded-For" in request.headers:
+        return request.headers["X-Forwarded-For"].split(',')[0]  # Consider the first IP in the list
+    return request.remote_addr
+
 def create_app():
     app = Flask(__name__)
     app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # 100 MB limit
     socketio = SocketIO(app, async_mode='eventlet',  max_http_buffer_size=1e8)
     
     limiter = Limiter(
-        key_func=get_remote_address,
+        key_func=get_client_ip,
         default_limits=["15 per 10 seconds"],
         storage_uri="memory://",
         strategy="moving-window"
