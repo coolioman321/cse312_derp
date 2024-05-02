@@ -1,6 +1,6 @@
 # cse312_derp
 
-Deployment Link -> derp.software
+Deployment Link -> ``derp.software``
 
 # Navigation Bar functionality
 - [x] User can click &equiv; to extend the navigation bar.
