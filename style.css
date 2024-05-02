@@ -19,10 +19,13 @@ button{background-color: cadetblue}
     width: 50%;
 }
 
-/* This is the right half section of the page*/
 #chatSection {
-    width: 50%;
-    min-width: 200px;
+    width: 100%;      /* Adjust the width as needed */
+    min-width: 100px;
+    padding: 50px;
+    transition: margin-left .5s;
+    padding: 20px;
+    margin-right: 300px;
 }
 
 /* This is the actual chat box */
@@ -40,27 +43,11 @@ button{background-color: cadetblue}
     box-sizing: border-box;
 }
 
-
-/* If the screen is less than 800px wide, change the layout to a column layout */
-@media (max-width: 800px) {
-    .page-layout {
-        flex-direction: column;
-    }
-
-    .page-content,
-    #chatSection {
-        width: 100%;
-        min-width: 0;
-    }
-}
-
 .like-button,
 .dislike-button {
     font-size: 10px;
     padding: 4px 8px;
 }
-
-
 
 /* The side navigation menu */
 .sidenav {
@@ -85,10 +72,10 @@ button{background-color: cadetblue}
     display: block;
     transition: 0.3s;
   }
-  
-  /* When you mouse over the navigation links, change their color */
-  .sidenav a:hover {
-    color: #f1f1f1;
+
+  .sidenav a:hover{
+
+    color: white;
   }
   
   /* Position and style the close button (top right corner) */
@@ -99,15 +86,21 @@ button{background-color: cadetblue}
     font-size: 36px;
     margin-left: 50px;
   }
-  
-  /* Style page content - use this if you want to push the page content to the right when you open the side navigation */
-  #main {
-    transition: margin-left .5s;
-    padding: 20px;
-  }
+
+
   
   /* On smaller screens, where height is less than 450px, change the style of the sidenav (less padding and a smaller font size) */
   @media screen and (max-height: 450px) {
     .sidenav {padding-top: 15px;}
-    .sidenav a {font-size: 18px;}
+  }
+
+  @media (max-width: 800px) {
+
+    #chatSection {
+        width: 100%;
+        min-width: 100px;
+        transition: margin-left .5s;
+        padding: 20px;
+        margin-right: 0px;
+    }
   }

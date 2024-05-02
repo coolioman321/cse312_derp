@@ -188,7 +188,7 @@ def create_app():
             user_record = users.find_one({"username": username})
             if not xsrf_token or xsrf_token != user_record.get("xsrf_token"):
                 emit('chat_response', {'success': False, 'message': 'XSRF token mismatch'})
-                return
+                return redirect(url_for('home_page'))
 
         # Initialize the counter
         document_count = unique_id_counter.count_documents({})
@@ -478,8 +478,6 @@ def create_app():
     @socketio.on('file_upload')
     def handle_upload_files(json):
 
-        print(f"\n\nbinary_data: {json}\n\n", flush = True)
-
         #{chunk: event.target.result, filename: file.name, finished: offset >= file.size}
 
         bin_data = json['chunk']
@@ -544,7 +542,7 @@ def create_app():
             insert_media_message(username, media_tag)
 
             # Notify the user (optional)
-            emit('upload_complete', {'message': 'Upload complete', 'file_path': file_path})
+            emit('upload_complete', {'message': 'Upload complete', 'file_path': file_path, "redirect": url_for('home_page')})
 
         else:
             print(f'\n\n\nfile_extension is empty \n\n\n', flush= True)

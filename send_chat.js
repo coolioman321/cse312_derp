@@ -7,7 +7,6 @@ document.addEventListener('DOMContentLoaded', function () {
         console.log('WebSocket connection established.');
     });
 
-
     socket.on('chat_message', (data) => {
         addMessageToChat(data);
     });
@@ -29,6 +28,10 @@ document.addEventListener('DOMContentLoaded', function () {
         alert(data.error)
     })
 
+    socket.on("upload_complete", function(json){
+        
+        document.getElementById('upload-button').disabled = false;  //re-enable the button
+    })
 
     // Send button for chat
     document.getElementById('send-btn').addEventListener('click', () => {
@@ -85,8 +88,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 console.log(`File Size: ${file.size} bytes`);
 
                 uploadFile(file, socket);
+                document.getElementById('upload-button').disabled = true;  // Disable the button
+                fileInput.value = ""; // reset the file-upload text
+
             } else {
-                console.error('No file selected.');
+                alert('No file selected.');
             }
         });
     }
@@ -235,11 +241,13 @@ function uploadFile(file, socket) {
 /* Set the width of the side navigation to 250px */
 function openNav() {
     document.getElementById("mySidenav").style.width = "250px";
+    document.getElementById("chatSection").style.marginLeft = "250px";
 }
 
 /* Set the width of the side navigation to 0 */
 function closeNav() {
     document.getElementById("mySidenav").style.width = "0";
+    document.getElementById("chatSection").style.marginLeft = "0";
 }
 
 
