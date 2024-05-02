@@ -36,7 +36,7 @@ def create_app():
     
     limiter = Limiter(
         key_func=get_remote_address,
-        default_limits=["25 per 10 seconds"],
+        default_limits=["22 per 10 seconds"],
         storage_uri="memory://",
         strategy="moving-window"
     )
