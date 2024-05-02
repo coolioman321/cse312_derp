@@ -10,7 +10,7 @@ Deployment Link -> ``derp.software``
 
 # Navigation Test Procedures
 
-1) Go to derp.software 
+1) Go to `derp.software`
 2) click the &equiv; located on the top left of the screen
 3) make sure the login and registration forms appear 
 4) click the x button located on the top right of the navigation bar
