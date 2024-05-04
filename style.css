@@ -51,7 +51,7 @@ button{background-color: cadetblue}
 
 /* The side navigation menu */
 .sidenav {
-    height: 100%; /* 100% Full-height */
+    height: 95%; /* 100% Full-height */
     width: 0; /* 0 width - change this with JavaScript */
     position: fixed; /* Stay in place */
     z-index: 1; /* Stay on top */
@@ -59,7 +59,7 @@ button{background-color: cadetblue}
     left: 0;
     background-color: #c6aeae; /* Black*/
     overflow-x: hidden; /* Disable horizontal scroll */
-    padding-top: 60px; /* Place content 60px from the top */
+    padding-top: 40px; /* Place content 60px from the top */
     transition: 0.5s; /* 0.5 second transition effect to slide in the sidenav */
   }
   
@@ -86,7 +86,9 @@ button{background-color: cadetblue}
     font-size: 36px;
     margin-left: 50px;
   }
-
+  .sidenav::-webkit-scrollbar {
+      display: none;
+  }
 
   
   /* On smaller screens, where height is less than 450px, change the style of the sidenav (less padding and a smaller font size) */
@@ -103,4 +105,17 @@ button{background-color: cadetblue}
         padding: 20px;
         margin-right: 0px;
     }
+  }
+  .home-link {
+      display: block;
+      margin-top: 20px;
+      margin-bottom: 20px;
+      margin-left: 20px;
+      font-size: 18px;
+      color: #818181;
+      text-decoration: none;
+  }
+
+  .home-link:hover {
+      text-decoration: underline;
   }
