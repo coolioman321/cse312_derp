@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     socket.on('chat_message', (data) => {
-        addMessageToChat(data);
+        addMessageToChat(data)
     });
 
     socket.on('like_updated', function (data) {
@@ -28,8 +28,7 @@ document.addEventListener('DOMContentLoaded', function () {
         alert(data.error)
     })
 
-    socket.on("upload_complete", function(json){
-        
+    socket.on("upload_complete", () => {
         document.getElementById('upload-button').disabled = false;  //re-enable the button
     })
 
@@ -135,6 +134,24 @@ function clearChat() {
     chatMessages.innerHTML = "";
 }
 
+function uploadMessageHTML(message) {
+    const { username, message: msg, id, like_count = 0, dislike_count = 0 } = message;
+    return `
+        <div id="message_${id}">
+            <button class = 'delete-button' data-message-id="${id}">X</button>
+            <b>${username}</b>: 
+            <br>
+            ${msg}
+            <br>
+            <button class="like-button" data-message-id="${id}">&#x1F44D;</button>
+            <span id='like_count_${id}'>${like_count}</span>
+            <button class='dislike-button' data-message-id="${id}">&#x1F44E;</button>
+            <span id='dislike_count_${id}'>${dislike_count}</span>
+        </div>
+        <br>
+    `;
+}
+
 function chatMessageHTML(message) {
     const { username, message: msg, id, like_count = 0, dislike_count = 0 } = message;
     return `
@@ -146,6 +163,7 @@ function chatMessageHTML(message) {
             <span id='dislike_count_${id}'>${dislike_count}</span>
             <b>${username}</b>: ${msg}
         </div>
+        <br>
     `;
 }
 
@@ -153,7 +171,15 @@ function chatMessageHTML(message) {
 function addMessageToChat(message) {
     const chatMessages = document.getElementById("chat-messages");
     const messageElement = document.createElement('div');
-    messageElement.innerHTML = chatMessageHTML(message);
+
+    messageType = message.messageType ?? "text"
+    if(messageType === 'text'){
+
+        messageElement.innerHTML = chatMessageHTML(message);
+    }else{
+
+        messageElement.innerHTML = uploadMessageHTML(message);
+    }
     chatMessages.appendChild(messageElement);
     chatMessages.scrollTop = chatMessages.scrollHeight; // Scroll to the bottom
 }

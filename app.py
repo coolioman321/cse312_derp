@@ -536,7 +536,7 @@ def create_app():
                 f.write(data)
 
             # Construct the appropriate media tag based on the file type
-            media_tag = generate_media_tag(filename, file_path)
+            media_tag = generate_media_tag(filename)
             
             # Insert the message into the database (chat collection or similar)
             insert_media_message(username, media_tag)
@@ -547,7 +547,7 @@ def create_app():
         else:
             print(f'\n\n\nfile_extension is empty \n\n\n', flush= True)
 
-    def generate_media_tag(filename, filepath):
+    def generate_media_tag(filename):
         # Determine the file extension
         if filename.endswith('.jpg') or filename.endswith('.png') or filename.endswith('.gif'):
             return f'<img src="/images/{filename}" alt="Uploaded image" style="max-width: 100%; max-height: 100%;">'
@@ -562,7 +562,7 @@ def create_app():
             unique_id_counter.insert_one({"counter": 1})
         current_unique_counter = unique_id_counter.find_one_and_update({}, {'$inc': {'counter': 1}}, return_document=True)
 
-        chat_message = {"message": media_tag, "username": username, "id": current_unique_counter['counter']}
+        chat_message = {"messageType":"upload", "message": media_tag, "username": username, "id": current_unique_counter['counter']}
 
         chat_collection.insert_one(chat_message)
         
