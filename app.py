@@ -8,10 +8,12 @@ import json
 from util.auth_token_functions import check_user_auth, generate_auth_token, return_username_of_authenticated_user
 import secrets
 import os
+
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from werkzeug.middleware.proxy_fix import ProxyFix
 import time
+from datetime import datetime
 
 mongo_client = MongoClient('mongo')
 db = mongo_client['derp']
@@ -24,6 +26,10 @@ disliked_messages = db['disliked_messages']
 
 file_count = 0
 file_storage = {}
+user_log = {}
+user_durations = {}
+user_sockets = []
+task = None
 
 banned_ips = {}
 request_counts = {}
@@ -174,7 +180,8 @@ def create_app():
                 # Secure the cookie
                 response.headers["Set-Cookie"] = "auth_token=" + generated_auth_token + "; Secure"
                 return response
-
+            
+        #if the password and username does not match send an alert
         return redirect(url_for('home_page'))
 
     @app.route('/log-out', methods=['POST'])
@@ -203,7 +210,7 @@ def create_app():
             user_record = users.find_one({"username": username})
             if not xsrf_token or xsrf_token != user_record.get("xsrf_token"):
                 emit('chat_response', {'success': False, 'message': 'XSRF token mismatch'})
-                return
+                return redirect(url_for('home_page'))
 
         # Initialize the counter
         document_count = unique_id_counter.count_documents({})
@@ -339,8 +346,10 @@ def create_app():
                         return jsonify({'like_count': updated_like_count, 'dislike_count': updated_dislike_count})
                     else:
                         return jsonify({"error": "Unauthorized"}), 401
-
+                emit("liking_own_post",{"error": "can not like your own post!"})
                 return jsonify({"error": "Unauthorized"}), 401
+            emit("must_login_to_like_post",{"error": "You must login to like post"})
+            
         else:
             print("message not found", flush = True)
             return jsonify({"error": "Unauthorized"}), 401
@@ -438,9 +447,10 @@ def create_app():
                     
                     else:
                         return jsonify({"error": "Unauthorized"}), 401
-
+                emit("disliking_own_post",{"error": "can not dislike your own post!"})
                 return jsonify({"error": "Unauthorized"}), 401
-
+            
+            emit("must_login_to_dislike_post", {"error": "You must login to dislike post"})
             return jsonify({"error": "Unauthorized"}), 401
 
     @socketio.on('delete')
@@ -492,8 +502,6 @@ def create_app():
 
     @socketio.on('file_upload')
     def handle_upload_files(json):
-
-        print(f"\n\nbinary_data: {json}\n\n", flush = True)
 
         #{chunk: event.target.result, filename: file.name, finished: offset >= file.size}
 
@@ -553,18 +561,18 @@ def create_app():
                 f.write(data)
 
             # Construct the appropriate media tag based on the file type
-            media_tag = generate_media_tag(filename, file_path)
+            media_tag = generate_media_tag(filename)
             
             # Insert the message into the database (chat collection or similar)
             insert_media_message(username, media_tag)
 
             # Notify the user (optional)
-            emit('upload_complete', {'message': 'Upload complete', 'file_path': file_path})
+            emit('upload_complete', {'message': 'Upload complete', 'file_path': file_path, "redirect": url_for('home_page')})
 
         else:
             print(f'\n\n\nfile_extension is empty \n\n\n', flush= True)
 
-    def generate_media_tag(filename, filepath):
+    def generate_media_tag(filename):
         # Determine the file extension
         if filename.endswith('.jpg') or filename.endswith('.png') or filename.endswith('.gif'):
             return f'<img src="/images/{filename}" alt="Uploaded image" style="max-width: 100%; max-height: 100%;">'
@@ -579,7 +587,7 @@ def create_app():
             unique_id_counter.insert_one({"counter": 1})
         current_unique_counter = unique_id_counter.find_one_and_update({}, {'$inc': {'counter': 1}}, return_document=True)
 
-        chat_message = {"message": media_tag, "username": username, "id": current_unique_counter['counter']}
+        chat_message = {"messageType":"upload", "message": media_tag, "username": username, "id": current_unique_counter['counter']}
 
         chat_collection.insert_one(chat_message)
         
@@ -632,10 +640,41 @@ def create_app():
             jsonify(error="Banned", message="Access temporarily blocked. Please try again in 30 seconds."), 429
         )
 
+    # return app, socketio
+
+    @socketio.on('connect')
+    def user_connected():
+        global task
+        username = return_username_of_authenticated_user()
+        if username is not None and username not in user_log:
+            user_log[username] = datetime.now()
+            user_sockets.append(request.sid)
+            if not task:
+                task = True
+                socketio.start_background_task(update_activity_duration)
+
+
+
+    @socketio.on('disconnect')
+    def disconnect():
+        global task
+        username = return_username_of_authenticated_user()
+        if username in user_log:
+            del user_log[username]
+        if username in user_durations:
+            del user_durations[username]
+        task = False
+
     return app, socketio
 
-    
-    
+def update_activity_duration():
+    while task:
+        for username, start_time in list(user_log.items()):
+            duration = datetime.now() - start_time
+            user_durations[username] = int(duration.total_seconds())  # Convert duration to seconds
+            socketio.emit('update_activity_status', user_durations)
+            socketio.sleep(1) #shuts down for 1 s
+
 if __name__ == "__main__":
     app, socketio = create_app()
     socketio.run(app, debug=True, host="0.0.0.0", port=8080)

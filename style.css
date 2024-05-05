@@ -19,10 +19,13 @@ button{background-color: cadetblue}
     width: 50%;
 }
 
-/* This is the right half section of the page*/
 #chatSection {
-    width: 50%;
-    min-width: 200px;
+    width: 100%;      /* Adjust the width as needed */
+    min-width: 100px;
+    padding: 50px;
+    transition: margin-left .5s;
+    padding: 20px;
+    margin-right: 100px;
 }
 
 /* This is the actual chat box */
@@ -40,22 +43,69 @@ button{background-color: cadetblue}
     box-sizing: border-box;
 }
 
-
-/* If the screen is less than 800px wide, change the layout to a column layout */
-@media (max-width: 800px) {
-    .page-layout {
-        flex-direction: column;
-    }
-
-    .page-content,
-    #chatSection {
-        width: 100%;
-        min-width: 0;
-    }
-}
-
 .like-button,
 .dislike-button {
     font-size: 10px;
     padding: 4px 8px;
 }
+
+/* The side navigation menu */
+.sidenav {
+    height: 100%; /* 100% Full-height */
+    width: 0; /* 0 width - change this with JavaScript */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Stay on top */
+    top: 0; /* Stay at the top */
+    left: 0;
+    background-color: #c6aeae; /* Black*/
+    overflow-x: hidden; /* Disable horizontal scroll */
+    padding-top: 60px; /* Place content 60px from the top */
+    transition: 0.5s; /* 0.5 second transition effect to slide in the sidenav */
+  }
+  
+  /* The navigation menu links */
+  .sidenav a {
+    padding: 8px 8px 8px 32px;
+    text-decoration: none;
+    font-size: 25px;
+    color: #818181;
+    display: block;
+    transition: 0.3s;
+  }
+
+  .sidenav a:hover{
+
+    color: white;
+  }
+  
+  /* Position and style the close button (top right corner) */
+  .sidenav .closebtn {
+    position: absolute;
+    top: 0;
+    right: 25px;
+    font-size: 36px;
+    margin-left: 50px;
+  }
+
+
+  
+  /* On smaller screens, where height is less than 450px, change the style of the sidenav (less padding and a smaller font size) */
+  @media screen and (max-height: 450px) {
+    .sidenav {padding-top: 15px;}
+  }
+
+  @media (max-width: 800px) {
+
+    #chatSection {
+        width: 100%;
+        min-width: 100px;
+        transition: margin-left .5s;
+        padding: 20px;
+        margin-right: 0px;
+    }
+  }
+
+  .user-list{
+
+    width: 400px;
+  }

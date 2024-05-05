@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     const isSecure = window.location.protocol === 'https:';
     const socket = io.connect(window.location.origin, { secure: isSecure, reconnect: true, rejectUnauthorized: false });
     //const socket = io.connect(window.location.origin);
@@ -7,9 +7,8 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('WebSocket connection established.');
     });
 
-
     socket.on('chat_message', (data) => {
-        addMessageToChat(data);
+        addMessageToChat(data)
     });
 
     socket.on('like_updated', function (data) {
@@ -20,15 +19,42 @@ document.addEventListener('DOMContentLoaded', function() {
         dislikeMessage(data);
     });
 
-    socket.on('delete_updated', function (data){
+    socket.on('delete_updated', function (data) {
         deleteMessage(data);
     });
 
-    socket.on('cannot_delete_other_msgs', function(data){
+    socket.on('update_activity_status', function (data) {
+        console.log(data);
+        console.log('in the update-activity-status');
+        userList(data);
+    });
+
+    socket.on('cannot_delete_other_msgs', function (data) {
 
         alert(data.error)
     })
 
+    socket.on("upload_complete", () => {
+        document.getElementById('upload-button').disabled = false;  //re-enable the button
+    })
+
+    socket.on("liking_own_post", (data) => {
+
+        alert(data.error);
+    })
+
+    socket.on("disliking_own_post", (data) => {
+
+        alert(data.error);
+    })
+    socket.on("must_login_to_like_post", (data) => {
+
+        alert(data.error);
+    })
+    socket.on("must_login_to_dislike_post", (data) => {
+
+        alert(data.error);
+    })
 
     // Send button for chat
     document.getElementById('send-btn').addEventListener('click', () => {
@@ -72,24 +98,27 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-     //upload button for images/videos
-     const fileUploadButton = document.getElementById('upload-button'); // Ensure your upload button has this ID
-     if (fileUploadButton) {
-         fileUploadButton.addEventListener('click', function () {
-             const fileInput = document.getElementById('file-upload');
-             if (fileInput.files.length > 0) {
- 
-                 let file = fileInput.files[0]
-                 console.log(`File Name: ${file.name}`);
-                 console.log(`File Type: ${file.type}`);
-                 console.log(`File Size: ${file.size} bytes`);
- 
-                 uploadFile(file, socket);
-             } else {
-                 console.error('No file selected.');
-             }
-         });
-     }
+    //upload button for images/videos
+    const fileUploadButton = document.getElementById('upload-button'); // Ensure your upload button has this ID
+    if (fileUploadButton) {
+        fileUploadButton.addEventListener('click', function () {
+            const fileInput = document.getElementById('file-upload');
+            if (fileInput.files.length > 0) {
+
+                let file = fileInput.files[0]
+                console.log(`File Name: ${file.name}`);
+                console.log(`File Type: ${file.type}`);
+                console.log(`File Size: ${file.size} bytes`);
+
+                uploadFile(file, socket);
+                document.getElementById('upload-button').disabled = true;  // Disable the button
+                fileInput.value = ""; // reset the file-upload text
+
+            } else {
+                alert('No file selected.');
+            }
+        });
+    }
 
 
     // Optional - Send chat message when Enter key is pressed
@@ -129,6 +158,24 @@ function clearChat() {
     chatMessages.innerHTML = "";
 }
 
+function uploadMessageHTML(message) {
+    const { username, message: msg, id, like_count = 0, dislike_count = 0 } = message;
+    return `
+        <div id="message_${id}">
+            <button class = 'delete-button' data-message-id="${id}">X</button>
+            <b>${username}</b>: 
+            <br>
+            ${msg}
+            <br>
+            <button class="like-button" data-message-id="${id}">&#x1F44D;</button>
+            <span id='like_count_${id}'>${like_count}</span>
+            <button class='dislike-button' data-message-id="${id}">&#x1F44E;</button>
+            <span id='dislike_count_${id}'>${dislike_count}</span>
+        </div>
+        <br>
+    `;
+}
+
 function chatMessageHTML(message) {
     const { username, message: msg, id, like_count = 0, dislike_count = 0 } = message;
     return `
@@ -140,25 +187,53 @@ function chatMessageHTML(message) {
             <span id='dislike_count_${id}'>${dislike_count}</span>
             <b>${username}</b>: ${msg}
         </div>
+        <br>
     `;
 }
+
+
+function userList(data) {
+
+    const user_list = document.getElementById("active-users");
+    user_list.innerHTML = "";
+    for (let username in data) {
+        if (data.hasOwnProperty(username)) {
+            let duration = data[username]
+            console.log(duration);
+            user_list.innerHTML += userHTML(username, duration);
+        }
+    }
+}
+
+
 
 //<button className='like-button' onClick='likeMessage("${id}")'>&#x1F44D;</button>
 function addMessageToChat(message) {
     const chatMessages = document.getElementById("chat-messages");
     const messageElement = document.createElement('div');
-    messageElement.innerHTML = chatMessageHTML(message);
+
+    messageType = message.messageType ?? "text"
+    if (messageType === 'text') {
+
+        messageElement.innerHTML = chatMessageHTML(message);
+    } else {
+
+        messageElement.innerHTML = uploadMessageHTML(message);
+    }
     chatMessages.appendChild(messageElement);
     chatMessages.scrollTop = chatMessages.scrollHeight; // Scroll to the bottom
 }
 
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// EVERYTHING BELOW NEEDS TO BE UPDATED TO WORK WITH WEBSOCKETS
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+function userHTML(username, duration) {
+    console.log('in the userHTML ');
+
+    let messageHTML = `<div class = "user" id= 'user_${username}' >
+                            <span>
+                                ${username} - Active: ${duration} seconds
+                            </span>
+                        </div>`
+    return messageHTML
+}
 
 function deleteMessage(data) {
     console.log('in the delete');
@@ -168,15 +243,9 @@ function deleteMessage(data) {
         console.log('deleting');
         messageElement.remove(); //remove
     } else {
-        console.log(`Message not found.`);}
-    //const request = new XMLHttpRequest();
-    //request.onreadystatechange = function () {
-        //if (this.readyState === 4 && this.status === 200) {
-            //console.log(this.response);
-        //}
-    //}
-    //request.open("DELETE", "/chat-messages/" + messageId);
-    //request.send();
+        console.log(`Message not found.`);
+    }
+
 }
 
 
@@ -189,8 +258,8 @@ function likeMessage(data) {
     const likeCountElement = document.getElementById(`like_count_${messageId}`);
     const dislikeCountElement = document.getElementById(`dislike_count_${messageId}`);
     likeCountElement.textContent = newLikeCount;
-    dislikeCountElement.textContent =newDislikeCount;
-    }
+    dislikeCountElement.textContent = newDislikeCount;
+}
 
 function dislikeMessage(data) {
 
@@ -229,6 +298,18 @@ function uploadFile(file, socket) {
     }
 
     sendNextChunk();
+}
+
+/* Set the width of the side navigation to 250px */
+function openNav() {
+    document.getElementById("mySidenav").style.width = "250px";
+    document.getElementById("chatSection").style.marginLeft = "250px";
+}
+
+/* Set the width of the side navigation to 0 */
+function closeNav() {
+    document.getElementById("mySidenav").style.width = "0";
+    document.getElementById("chatSection").style.marginLeft = "0";
 }
 
 
