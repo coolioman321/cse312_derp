@@ -609,7 +609,7 @@ def update_activity_duration():
     while task:
         for username, start_time in list(user_log.items()):
             duration = datetime.now() - start_time
-            user_durations[username] = duration.total_seconds()  # Convert duration to seconds
+            user_durations[username] = int(duration.total_seconds())
             socketio.emit('update_activity_status', user_durations)
             socketio.sleep(1) #shuts down for 1 s
 

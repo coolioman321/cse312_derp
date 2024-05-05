@@ -1,101 +1,118 @@
-body {
-    background-color: aquamarine;
-}
-h1 {
-    background-color: coral;
-    text-align: center;
-}
-button{background-color: cadetblue}
 
-/* This is the main layout of the page */
+body {
+    background: #c1c6ae;
+    color: #333;
+    font-family: monospace;
+    margin: 0;
+}
+
+h1 {
+    background-color: #aeb8c6;
+    color: #333;
+    text-align: center;
+    padding: 25px;
+    margin: 0;
+}
+
+
+button {
+    background-color: #aeb8c6;
+}
+
+/* Main layout of the page */
 .page-layout {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
 }
 
-/* This is the left half section of the page */
+/* Left half section of the page */
 .page-content {
     width: 50%;
 }
 
+
 #chatSection {
-    width: 100%;      /* Adjust the width as needed */
+    font-family: monospace;
+    width: calc(75% - 50px);
     min-width: 100px;
-    padding: 50px;
+    padding: 20px;
     transition: margin-left .5s;
     padding: 20px;
-    margin-right: 300px;
+    margin-right: 0px;
 }
 
-/* This is the actual chat box */
+/* Chat messages styling */
 .chat-messages {
+    font-family: monospace;
     border: 1px solid #ccc;
     height: 400px;
     margin-bottom: 10px;
     overflow-y: scroll;
 }
 
-/* This is the actual chat text box with increased width and padding */
+/* Chat text box styling */
 #chat-text-box {
-    width: 100%; 
+    width: 100%;
     padding: 10px;
     box-sizing: border-box;
 }
 
+/* Like and dislike button styling */
 .like-button,
 .dislike-button {
     font-size: 10px;
     padding: 4px 8px;
+    background-color: #aeb8c6;
+    box-shadow: inset 1px 1px 2px #ffffff, inset -1px -1px 2px #b3b3b3;
 }
 
-/* The side navigation menu */
+/* Side navigation menu styling */
 .sidenav {
-    height: 100%; /* 100% Full-height */
-    width: 0; /* 0 width - change this with JavaScript */
-    position: fixed; /* Stay in place */
-    z-index: 1; /* Stay on top */
-    top: 0; /* Stay at the top */
+    height: 100%;
+    width: 0;
+    position: fixed;
+    z-index: 1;
+    top: 0;
     left: 0;
-    background-color: #c6aeae; /* Black*/
-    overflow-x: hidden; /* Disable horizontal scroll */
-    padding-top: 60px; /* Place content 60px from the top */
-    transition: 0.5s; /* 0.5 second transition effect to slide in the sidenav */
-  }
-  
-  /* The navigation menu links */
-  .sidenav a {
+    background-color: #aeb8c6;
+    overflow-x: hidden;
+    padding-top: 60px;
+    transition: 0.5s;
+}
+
+/* Navigation menu links styling */
+.sidenav a {
     padding: 8px 8px 8px 32px;
     text-decoration: none;
     font-size: 25px;
     color: #818181;
     display: block;
     transition: 0.3s;
-  }
+}
 
-  .sidenav a:hover{
-
+/* Hover effect on navigation menu links */
+.sidenav a:hover {
     color: white;
-  }
-  
-  /* Position and style the close button (top right corner) */
-  .sidenav .closebtn {
+}
+
+/* Close button styling */
+.sidenav .closebtn {
     position: absolute;
     top: 0;
     right: 25px;
     font-size: 36px;
     margin-left: 50px;
-  }
+}
 
 
-  
-  /* On smaller screens, where height is less than 450px, change the style of the sidenav (less padding and a smaller font size) */
-  @media screen and (max-height: 450px) {
-    .sidenav {padding-top: 15px;}
-  }
+@media screen and (max-height: 450px) {
+    .sidenav {
+        padding-top: 15px;
+    }
+}
 
-  @media (max-width: 800px) {
-
+@media (max-width: 800px) {
     #chatSection {
         width: 100%;
         min-width: 100px;
@@ -103,4 +120,26 @@ button{background-color: cadetblue}
         padding: 20px;
         margin-right: 0px;
     }
-  }
+}
+#userSection {
+    text-align: center;
+    background-color: #aeb8c6;
+    border: 10px solid #aeb8c6;
+    font-family: monospace;
+    width: 25%;
+    min-width: 100px;
+    border-radius: 5px;
+    height: 610px;
+
+}
+.user {
+    background-color: MintCream;
+    padding: 10px;
+    margin-bottom: 5px;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+.user span {
+    font-family: monospace;
+}
