@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', function () {
         deleteMessage(data);
     });
 
-    socket.on('update_activity_status', function(data){
+    socket.on('update_activity_status', function (data) {
         console.log(data);
         console.log('in the update-activity-status');
         userList(data);
@@ -36,6 +36,24 @@ document.addEventListener('DOMContentLoaded', function () {
 
     socket.on("upload_complete", () => {
         document.getElementById('upload-button').disabled = false;  //re-enable the button
+    })
+
+    socket.on("liking_own_post", (data) => {
+
+        alert(data.error);
+    })
+
+    socket.on("disliking_own_post", (data) => {
+
+        alert(data.error);
+    })
+    socket.on("must_login_to_like_post", (data) => {
+
+        alert(data.error);
+    })
+    socket.on("must_login_to_dislike_post", (data) => {
+
+        alert(data.error);
     })
 
     // Send button for chat
@@ -183,7 +201,9 @@ function userList(data) {
             let duration = data[username]
             console.log(duration);
             user_list.innerHTML += userHTML(username, duration);
-        }}}
+        }
+    }
+}
 
 
 
@@ -193,10 +213,10 @@ function addMessageToChat(message) {
     const messageElement = document.createElement('div');
 
     messageType = message.messageType ?? "text"
-    if(messageType === 'text'){
+    if (messageType === 'text') {
 
         messageElement.innerHTML = chatMessageHTML(message);
-    }else{
+    } else {
 
         messageElement.innerHTML = uploadMessageHTML(message);
     }
@@ -204,11 +224,16 @@ function addMessageToChat(message) {
     chatMessages.scrollTop = chatMessages.scrollHeight; // Scroll to the bottom
 }
 
-function userHTML(username,duration) {
+function userHTML(username, duration) {
     console.log('in the userHTML ');
 
-    let messageHTML = "<div class='user' id='user_" + username + "'><span> " + username + " - Active: " + duration + " seconds</span></div>";
-    return messageHTML }
+    let messageHTML = `<div class = "user" id= 'user_${username}' >
+                            <span>
+                                ${username} - Active: ${duration} seconds
+                            </span>
+                        </div>`
+    return messageHTML
+}
 
 function deleteMessage(data) {
     console.log('in the delete');
@@ -218,7 +243,8 @@ function deleteMessage(data) {
         console.log('deleting');
         messageElement.remove(); //remove
     } else {
-        console.log(`Message not found.`);}
+        console.log(`Message not found.`);
+    }
 
 }
 

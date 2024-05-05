@@ -165,7 +165,8 @@ def create_app():
                 # Secure the cookie
                 response.headers["Set-Cookie"] = "auth_token=" + generated_auth_token + "; Secure"
                 return response
-
+            
+        #if the password and username does not match send an alert
         return redirect(url_for('home_page'))
 
     @app.route('/log-out', methods=['POST'])
@@ -330,8 +331,10 @@ def create_app():
                         return jsonify({'like_count': updated_like_count, 'dislike_count': updated_dislike_count})
                     else:
                         return jsonify({"error": "Unauthorized"}), 401
-
+                emit("liking_own_post",{"error": "can not like your own post!"})
                 return jsonify({"error": "Unauthorized"}), 401
+            emit("must_login_to_like_post",{"error": "You must login to like post"})
+            
         else:
             print("message not found", flush = True)
             return jsonify({"error": "Unauthorized"}), 401
@@ -429,9 +432,10 @@ def create_app():
                     
                     else:
                         return jsonify({"error": "Unauthorized"}), 401
-
+                emit("disliking_own_post",{"error": "can not dislike your own post!"})
                 return jsonify({"error": "Unauthorized"}), 401
-
+            
+            emit("must_login_to_dislike_post", {"error": "You must login to dislike post"})
             return jsonify({"error": "Unauthorized"}), 401
 
     @socketio.on('delete')
