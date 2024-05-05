@@ -24,6 +24,11 @@ document.addEventListener('DOMContentLoaded', function() {
         deleteMessage(data);
     });
 
+    socket.on('update_activity_status', function(data){
+        console.log(data);
+        console.log('in the update-activity-status');
+        userList(data);
+    });
 
     // Send button for chat
     document.getElementById('send-btn').addEventListener('click', () => {
@@ -121,6 +126,20 @@ function chatMessageHTML(message) {
     `;
 }
 
+
+function userList(data) {
+
+    const user_list = document.getElementById("active-users");
+    user_list.innerHTML = "";
+    for (let username in data) {
+        if (data.hasOwnProperty(username)) {
+            let duration = data[username]
+            console.log(duration);
+            user_list.innerHTML += userHTML(username, duration);
+        }}}
+
+
+
 //<button className='like-button' onClick='likeMessage("${id}")'>&#x1F44D;</button>
 function addMessageToChat(message) {
     const chatMessages = document.getElementById("chat-messages");
@@ -130,13 +149,11 @@ function addMessageToChat(message) {
     chatMessages.scrollTop = chatMessages.scrollHeight; // Scroll to the bottom
 }
 
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// EVERYTHING BELOW NEEDS TO BE UPDATED TO WORK WITH WEBSOCKETS
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+function userHTML(username,duration) {
+    console.log('in the userHTML ');
+
+    let messageHTML = "<div class='user' id='user_" + username + "'><span> " + username + " - Active: " + duration + " seconds</span></div>";
+    return messageHTML }
 
 function deleteMessage(data) {
     console.log('in the delete');
@@ -147,14 +164,7 @@ function deleteMessage(data) {
         messageElement.remove(); //remove
     } else {
         console.log(`Message not found.`);}
-    //const request = new XMLHttpRequest();
-    //request.onreadystatechange = function () {
-        //if (this.readyState === 4 && this.status === 200) {
-            //console.log(this.response);
-        //}
-    //}
-    //request.open("DELETE", "/chat-messages/" + messageId);
-    //request.send();
+
 }
 
 

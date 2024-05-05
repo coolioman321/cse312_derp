@@ -1,12 +1,15 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Tester Page</title>
+    <title>Derp</title>
     <link rel="stylesheet" type="text/css" href="/style.css"/>
-</head>
-<body>
+    <link rel="icon" type="image/x-icon" href="../images/favicon.ico">
 
-<header>
+
+</head>
+
+
+<header id = "welcome-header">
     <h1>WELCOME</h1>
 </header>
 
@@ -17,7 +20,8 @@
     <div class="page-content">
         <h2>Guest</h2>
         <div class="image_div">
-            <img src="/images/download.jpg" alt="ME rn" class="my_image" />
+            <img src="/images/download.jpg" alt="ME rn" class="my_image"/>
+            <link rel="shortcut icon" type="image/x-icon" href="/images/favicon.ico">
         </div>
 
         {% if not user_logged_in %}
@@ -76,6 +80,13 @@
             <input type="submit" value="Upload">
         </form>
     </section>
+
+    <div class="user-list">
+        <h2>User Activity</h2>
+        <div id="active-users">
+
+        </div>
+
 </div>
 <input type="hidden" id="xsrf-token" name="xsrf_token" value="REPLACE_THIS_XSRF_TOKEN">
 
@@ -83,4 +94,5 @@
 <script src="../send_chat.js"></script>
 <script src="https://cdn.socket.io/4.4.1/socket.io.min.js"></script>
 </body>
+
 </html>

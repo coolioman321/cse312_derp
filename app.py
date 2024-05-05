@@ -8,6 +8,8 @@ import json
 from util.auth_token_functions import check_user_auth, generate_auth_token, return_username_of_authenticated_user
 import secrets
 import os
+from datetime import datetime
+import threading
 
 mongo_client = MongoClient('mongo')
 db = mongo_client['derp']
@@ -19,12 +21,17 @@ liked_messages = db['liked_messages']
 disliked_messages = db['disliked_messages']
 
 file_count = 0
+user_log = {}
+user_durations = {}
+user_sockets = []
+task = None
 
 def create_app():
     app = Flask(__name__)
     app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # 100 MB limit
     socketio = SocketIO(app, async_mode='eventlet')
-    
+
+
 
     # Serve the home page
     @app.route('/')
@@ -61,6 +68,14 @@ def create_app():
     @app.route('/style.css')
     def host_css():
         response = send_from_directory('.', 'style.css', mimetype='text/css')
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        return response
+
+    @app.route('/favicon.ico')
+    def host_favicon():
+        print('serving favicon', flush = True)
+        print("in favicon", flush = True)
+        response = send_from_directory('.', 'images/favicon.ico', mimetype='image/x-icon')
         response.headers["X-Content-Type-Options"] = "nosniff"
         return response
 
@@ -531,9 +546,41 @@ def create_app():
         # Return to the homepage
         return redirect(url_for('home_page'))
 
+
+
+    @socketio.on('connect')
+    def user_connected():
+        global task
+        username = return_username_of_authenticated_user()
+        if username is not None and username not in user_log:
+            user_log[username] = datetime.now()
+            user_sockets.append(request.sid)
+            if not task:
+                task = True
+                socketio.start_background_task(update_activity_duration)
+
+
+
+    @socketio.on('disconnect')
+    def disconnect():
+        global task
+        username = return_username_of_authenticated_user()
+        if username in user_log:
+            del user_log[username]
+        if username in user_durations:
+            del user_durations[username]
+        task = False
     return app, socketio
 
-    
+
+def update_activity_duration():
+    while task:
+        for username, start_time in list(user_log.items()):
+            duration = datetime.now() - start_time
+            user_durations[username] = duration.total_seconds()  # Convert duration to seconds
+            socketio.emit('update_activity_status', user_durations)
+            socketio.sleep(1) #shuts down for 1 s
+
 if __name__ == "__main__":
     app, socketio = create_app()
     socketio.run(app, debug=True, host="0.0.0.0", port=8080)
