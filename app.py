@@ -8,6 +8,8 @@ import json
 from util.auth_token_functions import check_user_auth, generate_auth_token, return_username_of_authenticated_user
 import secrets
 import os
+from datetime import datetime
+import threading
 
 mongo_client = MongoClient('mongo')
 db = mongo_client['derp']
@@ -20,6 +22,10 @@ disliked_messages = db['disliked_messages']
 
 file_count = 0
 file_storage = {}
+user_log = {}
+user_durations = {}
+user_sockets = []
+task = None
 
 def create_app():
     app = Flask(__name__)
@@ -571,9 +577,42 @@ def create_app():
         # Broadcast the chat message to all clients
         emit('chat_message', chat_message, broadcast=True)
    
+
+
+
+    @socketio.on('connect')
+    def user_connected():
+        global task
+        username = return_username_of_authenticated_user()
+        if username is not None and username not in user_log:
+            user_log[username] = datetime.now()
+            user_sockets.append(request.sid)
+            if not task:
+                task = True
+                socketio.start_background_task(update_activity_duration)
+
+
+
+    @socketio.on('disconnect')
+    def disconnect():
+        global task
+        username = return_username_of_authenticated_user()
+        if username in user_log:
+            del user_log[username]
+        if username in user_durations:
+            del user_durations[username]
+        task = False
+
     return app, socketio
 
-    
+def update_activity_duration():
+    while task:
+        for username, start_time in list(user_log.items()):
+            duration = datetime.now() - start_time
+            user_durations[username] = duration.total_seconds()  # Convert duration to seconds
+            socketio.emit('update_activity_status', user_durations)
+            socketio.sleep(1) #shuts down for 1 s
+
 if __name__ == "__main__":
     app, socketio = create_app()
     socketio.run(app, debug=True, host="0.0.0.0", port=8080)
