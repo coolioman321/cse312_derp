@@ -1,31 +1,33 @@
 body {
-    background-color: aquamarine;
+    background: PaleTurquoise;
+    font-family: monospace;
 }
 h1 {
-    background-color: coral;
+    background-color: MintCream;
     text-align: center;
 }
-button{background-color: cadetblue}
+button{background-color: MintCream;}
 
-/* This is the main layout of the page */
+
 .page-layout {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
 }
 
-/* This is the left half section of the page */
+
 .page-content {
     width: 50%;
+
 }
 
-/* This is the right half section of the page*/
+
 #chatSection {
     width: 50%;
     min-width: 200px;
 }
 
-/* This is the actual chat box */
+
 .chat-messages {
     border: 1px solid #ccc;
     height: 400px;
@@ -33,7 +35,7 @@ button{background-color: cadetblue}
     overflow-y: scroll;
 }
 
-/* This is the actual chat text box with increased width and padding */
+
 #chat-text-box {
     width: 100%; 
     padding: 10px;
@@ -58,4 +60,19 @@ button{background-color: cadetblue}
 .dislike-button {
     font-size: 10px;
     padding: 4px 8px;
+    background-color: transparent;
+    box-shadow: inset 1px 1px 2px #ffffff, inset -1px -1px 2px #b3b3b3;
 }
+
+.user {
+    background-color: MintCream;
+    padding: 10px;
+    margin-bottom: 5px;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+.user span {
+    font-family: monospace;
+}
+
