@@ -676,7 +676,8 @@ def update_activity_duration():
             duration = datetime.now() - start_time
             user_durations[username] = int(duration.total_seconds())  # Convert duration to seconds
             socketio.emit('update_activity_status', user_durations)
-
+            
+        socketio.sleep(1) #shuts down for 1 s
 
 if __name__ == "__main__":
     app, socketio = create_app()
