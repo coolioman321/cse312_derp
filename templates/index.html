@@ -71,6 +71,16 @@
                         <br>
                         <button type="submit">Login</button>
                     </form>
+                    
+                    {% if error_login %}
+
+                        <script> 
+                            alert("Password and username does not match")
+                            window.location.href = '/';
+                        </script>
+
+                    {% endif %}
+
                     {% else %}
                     <form action="/log-out" id='log_out' method="post">
                         <input type="submit" value="Log out">

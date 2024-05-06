@@ -51,6 +51,7 @@ def create_app():
     # Serve the home page
     @app.route('/')
     def home_page():
+
         user_auth_status = check_user_auth(request.cookies.get("auth_token"))
         rendered_template = render_template('index.html', user_logged_in=user_auth_status)
         username = return_username_of_authenticated_user()
@@ -78,6 +79,7 @@ def create_app():
         response.headers["Content-Type"] = 'text/html'
         
         return response
+    
     @app.route('/about')
     def about_page():
         return render_template('about.html')
@@ -184,7 +186,9 @@ def create_app():
                 return response
             
         #if the password and username does not match send an alert
-        return redirect(url_for('home_page'))
+
+        global error_login
+        return render_template('index.html', error_login = True)
 
     @app.route('/log-out', methods=['POST'])
     def logout():
@@ -463,6 +467,7 @@ def create_app():
         request_auth_token = request.cookies.get('auth_token')
         if request_auth_token is None:
             print('1', flush= True)
+            emit("guest_cannot_del", {"error": "Guest cannot delete post!"})
             return jsonify({"error": "Unauthorized - No auth token provided"}), 401
 
         # Verify the auth token
@@ -676,7 +681,7 @@ def update_activity_duration():
             duration = datetime.now() - start_time
             user_durations[username] = int(duration.total_seconds())  # Convert duration to seconds
             socketio.emit('update_activity_status', user_durations)
-            
+
         socketio.sleep(1) #shuts down for 1 s
 
 if __name__ == "__main__":

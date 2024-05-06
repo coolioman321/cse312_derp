@@ -31,6 +31,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
         alert(data.error)
     })
+    socket.on('guest_cannot_del', function (data) {
+        alert(data.error)
+    })
 
     socket.on("upload_complete", () => {
         document.getElementById('upload-button').disabled = false;  //re-enable the button
