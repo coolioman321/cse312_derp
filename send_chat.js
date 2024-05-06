@@ -60,12 +60,14 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('send-btn').addEventListener('click', () => {
         const message = document.getElementById("chat-text-box").value;
         const xsrfToken = document.getElementById("xsrf-token").value;
-        document.getElementById("chat-text-box").value = ""; // clear input box
+        if (message.trim() !== "") {
+            document.getElementById("chat-text-box").value = ""; // clear input box
 
-        socket.emit('send_chat', {
-            message: message,
-            xsrf_token: xsrfToken
-        });
+            socket.emit('send_chat', {
+                message: message,
+                xsrf_token: xsrfToken
+            });
+        }
     });
 
     // on a click of the like button a call to the /like path is made
@@ -124,7 +126,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Optional - Send chat message when Enter key is pressed
     document.addEventListener("keypress", function (event) {
         const message = document.getElementById("chat-text-box").value;
-        if (event.code === "Enter" && message !== "") {
+        if (event.code === "Enter" && message.trim() !== "") {
             const xsrfToken = document.getElementById("xsrf-token").value;
             document.getElementById("chat-text-box").value = ""; // clear input box
 
