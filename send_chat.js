@@ -304,12 +304,14 @@ function uploadFile(file, socket) {
 function openNav() {
     document.getElementById("mySidenav").style.width = "250px";
     document.getElementById("chatSection").style.marginLeft = "250px";
+    document.getElementById("mySidenav").style.overflowY = "auto"; // Ensure scrolling is enabled when nav is open
 }
 
 /* Set the width of the side navigation to 0 */
 function closeNav() {
     document.getElementById("mySidenav").style.width = "0";
     document.getElementById("chatSection").style.marginLeft = "0";
+    document.getElementById("mySidenav").style.overflowY = "hidden"; // Hide scrollbar when nav is closed
 }
 
 

@@ -69,6 +69,21 @@ button {
 
 /* Side navigation menu styling */
 .sidenav {
+    height: 95%; /* 100% Full-height */
+    width: 0; /* 0 width - change this with JavaScript */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Stay on top */
+    top: 0; /* Stay at the top */
+    left: 0;
+    background-color: #c6aeae; /* Black*/
+    overflow-x: hidden; /* Disable horizontal scroll */
+    padding-top: 35px; /* Place content 60px from the top */
+    transition: 0.5s; /* 0.5 second transition effect to slide in the sidenav */
+  }
+  
+  /* The navigation menu links */
+
+/*   .sidenav a {
     height: 100%;
     width: 0;
     position: fixed;
@@ -80,9 +95,10 @@ button {
     padding-top: 60px;
     transition: 0.5s;
 }
-
+ */
 /* Navigation menu links styling */
 .sidenav a {
+
     padding: 8px 8px 8px 32px;
     text-decoration: none;
     font-size: 25px;
@@ -103,8 +119,10 @@ button {
     right: 25px;
     font-size: 36px;
     margin-left: 50px;
-}
-
+  }
+  .sidenav::-webkit-scrollbar {
+      display: none;
+  }
 
 @media screen and (max-height: 450px) {
     .sidenav {
@@ -120,6 +138,21 @@ button {
         padding: 20px;
         margin-right: 0px;
     }
+  }
+  .home-link {
+      display: block;
+      margin-top: 20px;
+      margin-bottom: 20px;
+      margin-left: 20px;
+      font-size: 18px;
+      color: #818181;
+      text-decoration: none;
+  }
+
+  .home-link:hover {
+      text-decoration: underline;
+  }
+
 }
 #userSection {
     text-align: center;

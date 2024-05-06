@@ -78,7 +78,9 @@ def create_app():
         response.headers["Content-Type"] = 'text/html'
         
         return response
-
+    @app.route('/about')
+    def about_page():
+        return render_template('about.html')
     # Serve CSS files
     @app.route('/style.css')
     def host_css():
