@@ -36,30 +36,39 @@
                         <h2>Register</h2>
                         <div>
                             <label for="username">Username:</label>
+                            <br>
                             <input type="text" id="username" name="username" required>
                         </div>
                         <div>
                             <label for="password">Password:</label>
+                            <br>
                             <input type="password" id="password" name="password" required minlength="8">
                         </div>
                         <div>
                             <label for="confirmPassword">Confirm Password:</label>
+                            <br>
                             <input type="password" id="confirmPassword" name="confirmPassword" required>
                         </div>
+                        <br>
                         <button type="submit">Register</button>
                     </form>
+
+                    <br>
 
                     <!-- Login Form -->
                     <form id="loginForm" action="/login" method="POST">
                         <h2>Login</h2>
                         <div>
                             <label for="username">Username:</label>
+                            <br>
                             <input type="text" id="login_username" name="login_username" required>
                         </div>
                         <div>
                             <label for="password">Password:</label>
+                            <br>
                             <input type="password" id="login_password" name="login_password" required minlength="8">
                         </div>
+                        <br>
                         <button type="submit">Login</button>
                     </form>
                     {% else %}
@@ -70,7 +79,7 @@
                 </div>
             </div>
 
-            <span style="font-size:30px;cursor:pointer" onclick="openNav()">&#9776;</span>
+            <span class = "three-bars"  style="font-size:30px;transition: 0.3s;" onclick="openNav()">&#9776;</span>
 
             <!-- Chat Section -->
             <section id="chatSection">
