@@ -120,9 +120,11 @@ button {
     font-size: 36px;
     margin-left: 50px;
   }
+  
   .sidenav::-webkit-scrollbar {
       display: none;
   }
+
 
 @media screen and (max-height: 450px) {
     .sidenav {
@@ -153,18 +155,19 @@ button {
       text-decoration: underline;
   }
 
-}
 #userSection {
+
     text-align: center;
-    background-color: #aeb8c6;
-    border: 10px solid #aeb8c6;
+    /* background-color: #aeb8c6; */
+    /* border: 10px solid #aeb8c6; */
     font-family: monospace;
     width: 25%;
     min-width: 100px;
     border-radius: 5px;
     height: 610px;
-
+    padding: 10px;
 }
+
 .user {
     background-color: MintCream;
     padding: 10px;

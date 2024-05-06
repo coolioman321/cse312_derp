@@ -23,7 +23,7 @@
 
             <div id="mySidenav" class="sidenav">
                 <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
-                <a href="/about">About Us</a>  <!-- New About Us link -->
+                <a href="/about">About Us</a> <!-- New About Us link -->
                 <div class="page-content">
                     <h2>Guest</h2>
                     <div class="image_div">
@@ -78,8 +78,9 @@
                 <div id="chat-messages" class="chat-messages">
                     <!-- Messages will be loaded here -->
                 </div>
-                <input type="text" id="chat-text-box" name="message" autocomplete="on"
+                <input type="text" id="chat-text-box" name="message" autocomplete="off"
                     placeholder="Type your message here...">
+
                 <button type="button" id="send-btn" class="send_button">Send</button>
 
 
@@ -91,6 +92,8 @@
 
         </form> -->
 
+                
+
                 <!-- upload file (Websocket) -->
                 <form id="upload-form">
                     <input id="file-upload" type="file" name="file">
@@ -99,12 +102,14 @@
 
             </section>
 
-            
+
             <section id="userSection">
-            <div class="user-list">
-                <h2>User Activity</h2>
-                <div id="active-users">
-            </div>
+
+                <div class="user-list">
+                    <h2>User Activity</h2>
+                    <div id="active-users">
+                    </div>
+
             </section>
 
 

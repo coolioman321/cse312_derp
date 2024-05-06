@@ -24,8 +24,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     socket.on('update_activity_status', function (data) {
-        console.log(data);
-        console.log('in the update-activity-status');
         userList(data);
     });
 
@@ -201,7 +199,7 @@ function userList(data) {
     for (let username in data) {
         if (data.hasOwnProperty(username)) {
             let duration = data[username]
-            console.log(duration);
+            // console.log(duration);
             user_list.innerHTML += userHTML(username, duration);
         }
     }
@@ -227,7 +225,7 @@ function addMessageToChat(message) {
 }
 
 function userHTML(username, duration) {
-    console.log('in the userHTML ');
+    // console.log('in the userHTML ');
 
     let messageHTML = `<div class = "user" id= 'user_${username}' >
                             <span>
