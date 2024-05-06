@@ -13,6 +13,10 @@
         <h1>WELCOME</h1>
     </header>
 
+    <link rel="stylesheet" type="text/css" href="/style.css" />
+    <link rel="icon" type="image/x-icon" href="../images/favicon.ico">
+
+
     <body onload="welcome();">
         <div class="page-layout">
             <!-- this is the log in - log-out forms -->
@@ -84,6 +88,7 @@
             <label for="file">Upload image or video:</label>
             <input id="file-upload" type="file" name="file">
             <input type="submit" value="Upload">
+
         </form> -->
 
                 <!-- upload file (Websocket) -->
@@ -92,9 +97,17 @@
                     <button id="upload-button" type="button">Upload</button>
                 </form>
 
-                
-                
             </section>
+
+            
+            <section id="userSection">
+            <div class="user-list">
+                <h2>User Activity</h2>
+                <div id="active-users">
+            </div>
+            </section>
+
+
         </div>
         <input type="hidden" id="xsrf-token" name="xsrf_token" value="REPLACE_THIS_XSRF_TOKEN">
 
@@ -103,5 +116,5 @@
         <script src="https://cdn.socket.io/4.4.1/socket.io.min.js"></script>
     </body>
 
-</body>
+
 </html>

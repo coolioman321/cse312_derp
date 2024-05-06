@@ -9,6 +9,12 @@ from util.auth_token_functions import check_user_auth, generate_auth_token, retu
 import secrets
 import os
 
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+from werkzeug.middleware.proxy_fix import ProxyFix
+import time
+from datetime import datetime
+
 mongo_client = MongoClient('mongo')
 db = mongo_client['derp']
 users = db['users']
@@ -20,12 +26,27 @@ disliked_messages = db['disliked_messages']
 
 file_count = 0
 file_storage = {}
+user_log = {}
+user_durations = {}
+user_sockets = []
+task = None
+
+banned_ips = {}
+request_counts = {}
 
 def create_app():
     app = Flask(__name__)
     app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # 100 MB limit
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_host=1, x_port=1, x_prefix=1)
     socketio = SocketIO(app, async_mode='eventlet',  max_http_buffer_size=1e8)
     
+    limiter = Limiter(
+        key_func=get_remote_address,
+        default_limits=["20 per 10 seconds"],
+        storage_uri="memory://",
+        strategy="moving-window"
+    )
+    limiter.init_app(app)
 
     # Serve the home page
     @app.route('/')
@@ -161,7 +182,8 @@ def create_app():
                 # Secure the cookie
                 response.headers["Set-Cookie"] = "auth_token=" + generated_auth_token + "; Secure"
                 return response
-
+            
+        #if the password and username does not match send an alert
         return redirect(url_for('home_page'))
 
     @app.route('/log-out', methods=['POST'])
@@ -326,8 +348,10 @@ def create_app():
                         return jsonify({'like_count': updated_like_count, 'dislike_count': updated_dislike_count})
                     else:
                         return jsonify({"error": "Unauthorized"}), 401
-
+                emit("liking_own_post",{"error": "can not like your own post!"})
                 return jsonify({"error": "Unauthorized"}), 401
+            emit("must_login_to_like_post",{"error": "You must login to like post"})
+            
         else:
             print("message not found", flush = True)
             return jsonify({"error": "Unauthorized"}), 401
@@ -425,9 +449,10 @@ def create_app():
                     
                     else:
                         return jsonify({"error": "Unauthorized"}), 401
-
+                emit("disliking_own_post",{"error": "can not dislike your own post!"})
                 return jsonify({"error": "Unauthorized"}), 401
-
+            
+            emit("must_login_to_dislike_post", {"error": "You must login to dislike post"})
             return jsonify({"error": "Unauthorized"}), 401
 
     @socketio.on('delete')
@@ -538,7 +563,7 @@ def create_app():
                 f.write(data)
 
             # Construct the appropriate media tag based on the file type
-            media_tag = generate_media_tag(filename, file_path)
+            media_tag = generate_media_tag(filename)
             
             # Insert the message into the database (chat collection or similar)
             insert_media_message(username, media_tag)
@@ -549,7 +574,7 @@ def create_app():
         else:
             print(f'\n\n\nfile_extension is empty \n\n\n', flush= True)
 
-    def generate_media_tag(filename, filepath):
+    def generate_media_tag(filename):
         # Determine the file extension
         if filename.endswith('.jpg') or filename.endswith('.png') or filename.endswith('.gif'):
             return f'<img src="/images/{filename}" alt="Uploaded image" style="max-width: 100%; max-height: 100%;">'
@@ -564,7 +589,7 @@ def create_app():
             unique_id_counter.insert_one({"counter": 1})
         current_unique_counter = unique_id_counter.find_one_and_update({}, {'$inc': {'counter': 1}}, return_document=True)
 
-        chat_message = {"message": media_tag, "username": username, "id": current_unique_counter['counter']}
+        chat_message = {"messageType":"upload", "message": media_tag, "username": username, "id": current_unique_counter['counter']}
 
         chat_collection.insert_one(chat_message)
         
@@ -572,10 +597,86 @@ def create_app():
 
         # Broadcast the chat message to all clients
         emit('chat_message', chat_message, broadcast=True)
-   
+    
+    @app.before_request
+    def check_ban_status():
+        ip = get_remote_address()
+        current_time = time.time()
+
+        if ip in banned_ips:
+            ban_time = banned_ips[ip]
+            if current_time < ban_time:
+                time_left = int(ban_time - current_time)
+                # Attach a flag to the request context to indicate this was a ban hit
+                request.is_banned = True  
+                return make_response(
+                    jsonify(error="Banned", message=f"Access temporarily blocked. Please try again in {time_left} seconds."), 429
+                )
+            else:
+                # Ban time has expired, remove the IP from the banned list
+                del banned_ips[ip]
+
+        # Initialize or reset the request count for IP
+        if ip not in request_counts or current_time > request_counts[ip]['reset_time']:
+            request_counts[ip] = {'count': 1, 'reset_time': current_time + 10}  # Reset every 10 seconds
+        else:
+            request_counts[ip]['count'] += 1
+
+        remaining = max(0, 50 - request_counts[ip]['count'])
+        print(f"IP {ip} has made {request_counts[ip]['count']} requests. {remaining} requests left before limit.", flush=True)
+
+    @app.after_request
+    def after_request_func(response):
+        ip = get_remote_address()
+        # Only reset count and set ban if this wasn't already a ban response
+        if response.status_code == 429 and not getattr(request, 'is_banned', False):
+            # Reset count and set ban on rate limit
+            banned_ips[ip] = time.time() + 30
+            request_counts[ip]['count'] = 0
+            print(f"IP {ip} banned for exceeding rate limits. No more requests allowed for 30 seconds.", flush=True)
+        return response
+
+    @app.errorhandler(429)
+    def ratelimit_handler(e):
+        return make_response(
+            jsonify(error="Banned", message="Access temporarily blocked. Please try again in 30 seconds."), 429
+        )
+
+    # return app, socketio
+
+    @socketio.on('connect')
+    def user_connected():
+        global task
+        username = return_username_of_authenticated_user()
+        if username is not None and username not in user_log:
+            user_log[username] = datetime.now()
+            user_sockets.append(request.sid)
+            if not task:
+                task = True
+                socketio.start_background_task(update_activity_duration)
+
+
+
+    @socketio.on('disconnect')
+    def disconnect():
+        global task
+        username = return_username_of_authenticated_user()
+        if username in user_log:
+            del user_log[username]
+        if username in user_durations:
+            del user_durations[username]
+        task = False
+
     return app, socketio
 
-    
+def update_activity_duration():
+    while task:
+        for username, start_time in list(user_log.items()):
+            duration = datetime.now() - start_time
+            user_durations[username] = int(duration.total_seconds())  # Convert duration to seconds
+            socketio.emit('update_activity_status', user_durations)
+            socketio.sleep(1) #shuts down for 1 s
+
 if __name__ == "__main__":
     app, socketio = create_app()
     socketio.run(app, debug=True, host="0.0.0.0", port=8080)

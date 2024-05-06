@@ -3,3 +3,4 @@ bcrypt
 Flask
 Flask-SocketIO
 eventlet
+Flask-Limiter

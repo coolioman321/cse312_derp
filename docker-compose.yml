@@ -6,9 +6,9 @@ services:
       - '80:80'
       - '443:443'
     # COMMENT OUT THE NEXT 3 LINES IF YOU WANT TO USE LOCALHOST   
-    #volumes:
-    #  - /etc/letsencrypt:/etc/letsencrypt:ro  # Ensuring SSL certificates are accessible
-    #restart: unless-stopped
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt:ro  # Ensuring SSL certificates are accessible
+    restart: unless-stopped
 
   mongo:
     image: mongo:4.2.5

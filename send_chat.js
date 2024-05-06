@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     socket.on('chat_message', (data) => {
-        addMessageToChat(data);
+        addMessageToChat(data)
     });
 
     socket.on('like_updated', function (data) {
@@ -23,14 +23,37 @@ document.addEventListener('DOMContentLoaded', function () {
         deleteMessage(data);
     });
 
+    socket.on('update_activity_status', function (data) {
+        console.log(data);
+        console.log('in the update-activity-status');
+        userList(data);
+    });
+
     socket.on('cannot_delete_other_msgs', function (data) {
 
         alert(data.error)
     })
 
-    socket.on("upload_complete", function(json){
-        
+    socket.on("upload_complete", () => {
         document.getElementById('upload-button').disabled = false;  //re-enable the button
+    })
+
+    socket.on("liking_own_post", (data) => {
+
+        alert(data.error);
+    })
+
+    socket.on("disliking_own_post", (data) => {
+
+        alert(data.error);
+    })
+    socket.on("must_login_to_like_post", (data) => {
+
+        alert(data.error);
+    })
+    socket.on("must_login_to_dislike_post", (data) => {
+
+        alert(data.error);
     })
 
     // Send button for chat
@@ -135,6 +158,24 @@ function clearChat() {
     chatMessages.innerHTML = "";
 }
 
+function uploadMessageHTML(message) {
+    const { username, message: msg, id, like_count = 0, dislike_count = 0 } = message;
+    return `
+        <div id="message_${id}">
+            <button class = 'delete-button' data-message-id="${id}">X</button>
+            <b>${username}</b>: 
+            <br>
+            ${msg}
+            <br>
+            <button class="like-button" data-message-id="${id}">&#x1F44D;</button>
+            <span id='like_count_${id}'>${like_count}</span>
+            <button class='dislike-button' data-message-id="${id}">&#x1F44E;</button>
+            <span id='dislike_count_${id}'>${dislike_count}</span>
+        </div>
+        <br>
+    `;
+}
+
 function chatMessageHTML(message) {
     const { username, message: msg, id, like_count = 0, dislike_count = 0 } = message;
     return `
@@ -146,25 +187,53 @@ function chatMessageHTML(message) {
             <span id='dislike_count_${id}'>${dislike_count}</span>
             <b>${username}</b>: ${msg}
         </div>
+        <br>
     `;
 }
+
+
+function userList(data) {
+
+    const user_list = document.getElementById("active-users");
+    user_list.innerHTML = "";
+    for (let username in data) {
+        if (data.hasOwnProperty(username)) {
+            let duration = data[username]
+            console.log(duration);
+            user_list.innerHTML += userHTML(username, duration);
+        }
+    }
+}
+
+
 
 //<button className='like-button' onClick='likeMessage("${id}")'>&#x1F44D;</button>
 function addMessageToChat(message) {
     const chatMessages = document.getElementById("chat-messages");
     const messageElement = document.createElement('div');
-    messageElement.innerHTML = chatMessageHTML(message);
+
+    messageType = message.messageType ?? "text"
+    if (messageType === 'text') {
+
+        messageElement.innerHTML = chatMessageHTML(message);
+    } else {
+
+        messageElement.innerHTML = uploadMessageHTML(message);
+    }
     chatMessages.appendChild(messageElement);
     chatMessages.scrollTop = chatMessages.scrollHeight; // Scroll to the bottom
 }
 
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// EVERYTHING BELOW NEEDS TO BE UPDATED TO WORK WITH WEBSOCKETS
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+function userHTML(username, duration) {
+    console.log('in the userHTML ');
+
+    let messageHTML = `<div class = "user" id= 'user_${username}' >
+                            <span>
+                                ${username} - Active: ${duration} seconds
+                            </span>
+                        </div>`
+    return messageHTML
+}
 
 function deleteMessage(data) {
     console.log('in the delete');
@@ -176,14 +245,7 @@ function deleteMessage(data) {
     } else {
         console.log(`Message not found.`);
     }
-    //const request = new XMLHttpRequest();
-    //request.onreadystatechange = function () {
-    //if (this.readyState === 4 && this.status === 200) {
-    //console.log(this.response);
-    //}
-    //}
-    //request.open("DELETE", "/chat-messages/" + messageId);
-    //request.send();
+
 }
 
 
