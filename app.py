@@ -656,16 +656,17 @@ def create_app():
                 socketio.start_background_task(update_activity_duration)
 
 
-
     @socketio.on('disconnect')
     def disconnect():
-        global task
         username = return_username_of_authenticated_user()
         if username in user_log:
             del user_log[username]
         if username in user_durations:
             del user_durations[username]
-        task = False
+        if len(user_log) == 0:
+            global task
+            task = False
+
 
     return app, socketio
 
